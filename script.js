@@ -38,7 +38,11 @@ currentQuestion++;
 
 if(currentQuestion < questions.length){
 
-loadQuestion();
+if(questions.length > 0){
+    currentQuestion = 0;
+    score = 0;
+    loadQuestion();
+}
 
 }else{
 
