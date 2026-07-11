@@ -1,42 +1,69 @@
-function parseQuestions(questionText, answerText) {
+function parseQuestions(questionText, answerText){
 
-    const questions = [];
+const questions=[];
 
-    // Split by question number (1. 2. 3. ...)
-    const blocks = questionText.split(/\n\s*\d+\.\s+/);
+// Split each question
+const blocks=questionText.split(/\n(?=\d+\.)/);
 
-    // Get answers like: 1. C  2. D  3. A
-    const answers = [];
-    const answerRegex = /\d+\.\s*\*\*([A-D])\)/g;
+// Read answers like:
+// 1. B
+// 2. D
+const answers=[];
 
-    let match;
+const answerLines=answerText.split("\n");
 
-    while ((match = answerRegex.exec(answerText)) !== null) {
-        answers.push(match[1].charCodeAt(0) - 65);
-    }
+for(let line of answerLines){
 
-    for (let i = 1; i < blocks.length; i++) {
+const m=line.match(/^\d+\.\s*([A-D])/);
 
-        let block = blocks[i].trim();
+if(m){
+answers.push(m[1].charCodeAt(0)-65);
+}
 
-        const optionMatch = block.match(/A\)(.*?)B\)(.*?)C\)(.*?)D\)(.*)/s);
+}
 
-        if (!optionMatch) continue;
+let index=0;
 
-        const question = block.substring(0, block.indexOf("A)")).trim();
+for(let block of blocks){
 
-        questions.push({
-            question: question,
-            options: [
-                optionMatch[1].trim(),
-                optionMatch[2].trim(),
-                optionMatch[3].trim(),
-                optionMatch[4].trim()
-            ],
-            answer: answers[i - 1] ?? -1
-        });
+block=block.trim();
 
-    }
+if(block==="") continue;
 
-    return questions;
+const qMatch=block.match(/^\d+\.\s*(.*?)\n/s);
+
+if(!qMatch) continue;
+
+const question=qMatch[1].trim();
+
+const optionRegex=/([A-D])\)\s*(.*?)(?=\s+[A-D]\)|$)/gs;
+
+const options=[];
+
+let opt;
+
+while((opt=optionRegex.exec(block))!==null){
+
+options.push(opt[2].trim());
+
+}
+
+if(options.length===4){
+
+questions.push({
+
+question:question,
+options:options,
+answer:answers[index] ?? -1
+
+});
+
+index++;
+
+}
+
+}
+
+return questions;
+
 }
