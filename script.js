@@ -1,112 +1,67 @@
 let questionsText = localStorage.getItem("questionsText");
 let answersText = localStorage.getItem("answersText");
 
-let questions = [];
-
-if(questionsText && answersText){
-    questions = parseQuestions(questionsText, answersText);
-}else{
+if(!questionsText || !answersText){
     alert("Please upload Questions and Answers first.");
     window.location.href = "upload.html";
 }
+
+let questions = parseQuestions(questionsText, answersText);
+
+if(questions.length === 0){
+    alert("No questions found. Please check your files.");
+    window.location.href = "upload.html";
+}
+
 let currentQuestion = 0;
 let score = 0;
 let timeLeft = 60;
 let timer;
+
 const question = document.getElementById("question");
+const options = document.getElementById("options");
 const message = document.getElementById("message");
-const buttons = document.querySelectorAll("button");
+const timerText = document.getElementById("timer");
+const questionNumber = document.getElementById("questionNumber");
+const progressBar = document.getElementById("progressBar");
 
-function loadQuestion() {
-clearInterval(timer);
+function loadQuestion(){
 
-timeLeft = 60;
+    clearInterval(timer);
 
-document.getElementById("timer").innerHTML = timeLeft;
+    timeLeft = 60;
+    timerText.textContent = timeLeft;
 
-timer = setInterval(function(){
+    message.textContent = "";
 
-timeLeft--;
+    let q = questions[currentQuestion];
 
-document.getElementById("timer").innerHTML = timeLeft;
+    question.textContent = q.question;
 
-if(timeLeft <= 0){
+    questionNumber.textContent =
+    "Question " + (currentQuestion + 1) + " / " + questions.length;
 
-clearInterval(timer);
+    progressBar.style.width =
+    ((currentQuestion + 1) / questions.length * 100) + "%";
 
-currentQuestion++;
+    options.innerHTML = "";
 
-if(currentQuestion < questions.length){
+    for(let i = 0; i < q.options.length; i++){
 
-if(questions.length > 0){
-    currentQuestion = 0;
-    score = 0;
-    loadQuestion();
-}
+        let btn = document.createElement("button");
 
-}else{
+        btn.textContent = q.options[i];
 
-document.querySelector(".container").innerHTML = `
-<h1>🎉 Quiz Finished</h1>
-<h2>Your Score: ${score} / ${questions.length}</h2>
-<button onclick="location.reload()">Play Again</button>
-`;
+        btn.onclick = function(){
 
-}
-
-}
-
-},1000);
-    message.innerHTML = "";
-let percent = ((currentQuestion + 1) / questions.length) * 100;
-
-document.getElementById("progressBar").style.width = percent + "%";
-    question.innerHTML = questions[currentQuestion].question;
-document.getElementById("questionNumber").innerHTML =
-"Question " + (currentQuestion + 1) + "/" + questions.length;
-    for (let i = 0; i < 4; i++) {
-
-        buttons[i].innerHTML = questions[currentQuestion].options[i];
-
-        buttons[i].onclick = function () {
-
-            if (i === questions[currentQuestion].answer) {
-                message.innerHTML = "✅ Correct!";
-                message.style.color = "green";
-                score++;
-            } else {
-                message.innerHTML = "❌ Wrong!";
-                message.style.color = "red";
-            }
-
-            buttons.forEach(btn => btn.disabled = true);
-
-            setTimeout(function () {
-
-                currentQuestion++;
-
-                if (currentQuestion < questions.length) {
-
-                    buttons.forEach(btn => btn.disabled = false);
-
-                    loadQuestion();
-
-                } else {
-
-                    document.querySelector(".container").innerHTML = `
-                        <h1>🎉 Quiz Finished</h1>
-                        <h2>Your Score: ${score} / ${questions.length}</h2>
-                        <button onclick="location.reload()">Play Again</button>
-                    `;
-
-                }
-
-            }, 1000);
+            checkAnswer(i);
 
         };
 
+        options.appendChild(btn);
+
     }
 
-}
+    startTimer();
 
-loadQuestion();
+            }
