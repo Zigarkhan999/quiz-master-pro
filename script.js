@@ -3,7 +3,7 @@ let score = 0;
 
 let buttons = document.querySelectorAll("button");
 
-function loadQuestion() {
+function loadQuestion() { document.getElementById("message").innerHTML = "";
 
 document.getElementById("question").innerHTML =
 questions[currentQuestion].question;
@@ -17,12 +17,14 @@ buttons[i].onclick = function(){
 
 if(i === questions[currentQuestion].answer){
 
-alert("✅ Correct!");
+document.getElementById("message").innerHTML = "✅ Correct!";
+document.getElementById("message").style.color = "green";
 score++;
 
 }else{
 
-alert("❌ Wrong!");
+document.getElementById("message").innerHTML = "❌ Wrong!";
+document.getElementById("message").style.color = "red";
 
 }
 
