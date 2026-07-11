@@ -64,7 +64,7 @@ function loadQuestion(){
 
     startTimer();
 
-            }
+                }
 function checkAnswer(selected){
 
     clearInterval(timer);
