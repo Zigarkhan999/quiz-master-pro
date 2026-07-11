@@ -47,7 +47,8 @@ let percent = ((currentQuestion + 1) / questions.length) * 100;
 
 document.getElementById("progressBar").style.width = percent + "%";
     question.innerHTML = questions[currentQuestion].question;
-
+document.getElementById("questionNumber").innerHTML =
+"Question " + (currentQuestion + 1) + "/" + questions.length;
     for (let i = 0; i < 4; i++) {
 
         buttons[i].innerHTML = questions[currentQuestion].options[i];
