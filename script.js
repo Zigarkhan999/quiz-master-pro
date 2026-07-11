@@ -43,7 +43,9 @@ document.querySelector(".container").innerHTML = `
 
 },1000);
     message.innerHTML = "";
+let percent = ((currentQuestion + 1) / questions.length) * 100;
 
+document.getElementById("progressBar").style.width = percent + "%";
     question.innerHTML = questions[currentQuestion].question;
 
     for (let i = 0; i < 4; i++) {
