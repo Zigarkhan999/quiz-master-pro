@@ -1,3 +1,8 @@
+let uploadedData = localStorage.getItem("quizFile");
+
+if(uploadedData){
+console.log(uploadedData);
+}
 let currentQuestion = 0;
 let score = 0;
 let timeLeft = 60;
