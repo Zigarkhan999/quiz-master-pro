@@ -28,6 +28,8 @@ document.getElementById("message").style.color = "red";
 
 }
 
+setTimeout(function(){
+
 currentQuestion++;
 
 if(currentQuestion < questions.length){
@@ -42,9 +44,7 @@ document.body.innerHTML =
 
 }
 
-};
-
-}
+},1000);
 
 }
 
