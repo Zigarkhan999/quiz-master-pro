@@ -23,6 +23,22 @@ if(timeLeft <= 0){
 
 clearInterval(timer);
 
+currentQuestion++;
+
+if(currentQuestion < questions.length){
+
+loadQuestion();
+
+}else{
+
+document.querySelector(".container").innerHTML = `
+<h1>🎉 Quiz Finished</h1>
+<h2>Your Score: ${score} / ${questions.length}</h2>
+<button onclick="location.reload()">Play Again</button>
+`;
+
+}
+
 }
 
 },1000);
