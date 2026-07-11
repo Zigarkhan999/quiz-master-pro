@@ -3,17 +3,19 @@ let score = 0;
 
 let buttons = document.querySelectorAll("button");
 
-function loadQuestion() { document.getElementById("message").innerHTML = "";
+function loadQuestion() {
+
+document.getElementById("message").innerHTML = "";
 
 document.getElementById("question").innerHTML =
 questions[currentQuestion].question;
 
-for(let i=0; i<4; i++){
+for(let i = 0; i < 4; i++) {
 
 buttons[i].innerHTML =
 questions[currentQuestion].options[i];
 
-buttons[i].onclick = function(){
+buttons[i].onclick = function() {
 
 if(i === questions[currentQuestion].answer){
 
@@ -45,6 +47,10 @@ document.body.innerHTML =
 }
 
 },1000);
+
+};
+
+}
 
 }
 
