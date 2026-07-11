@@ -1,7 +1,13 @@
-let uploadedData = localStorage.getItem("quizFile");
+let questionsText = localStorage.getItem("questionsText");
+let answersText = localStorage.getItem("answersText");
 
-if(uploadedData){
-console.log(uploadedData);
+let questions = [];
+
+if(questionsText && answersText){
+    questions = parseQuestions(questionsText, answersText);
+}else{
+    alert("Please upload Questions and Answers first.");
+    window.location.href = "upload.html";
 }
 let currentQuestion = 0;
 let score = 0;
