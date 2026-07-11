@@ -1,50 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Upload PDF</title>
+<title>Upload Quiz Files</title>
 
-<style>
-
-body{
-font-family:Arial,sans-serif;
-background:#f2f2f2;
-padding:20px;
-}
-
-.container{
-max-width:500px;
-margin:auto;
-background:white;
-padding:20px;
-border-radius:15px;
-box-shadow:0 0 10px rgba(0,0,0,.2);
-text-align:center;
-}
-
-input{
-width:100%;
-padding:12px;
-margin-top:20px;
-}
-
-button{
-width:100%;
-padding:15px;
-margin-top:20px;
-font-size:18px;
-background:#007BFF;
-color:white;
-border:none;
-border-radius:10px;
-cursor:pointer;
-}
-
-</style>
+<link rel="stylesheet" href="style.css">
 
 </head>
 
@@ -52,58 +16,57 @@ cursor:pointer;
 
 <div class="container">
 
-<h1>📄 Upload PDF</h1>
+<h1>📄 Upload Quiz Files</h1>
 
-<p>Select your study PDF.</p>
+<p>Select your Questions file and Answer Key.</p>
 
-<h2>Upload Questions</h2>
+<h3>Questions File</h3>
 
-<input type="file" id="questionsFile" accept=".txt">
+<input
+type="file"
+id="questionsFile"
+accept=".md,.txt,.pdf">
 
-<h2>Upload Answers</h2>
+<h3>Answers File</h3>
 
-<input type="file" id="answersFile" accept=".txt">
+<input
+type="file"
+id="answersFile"
+accept=".md,.txt,.pdf">
 
 <button onclick="uploadFiles()">
-Start Quiz
+🚀 Start Quiz
 </button>
 
 <br><br>
 
-<button onclick="window.location.href='index.html'">
-
-🏠 Back to Home
-
+<a href="index.html">
+<button>
+🏠 Back Home
 </button>
+</a>
 
 </div>
-<script>
-<script>
-
-function uploadFiles(){
-
-alert("Questions and Answers selected successfully!");
-
-window.location.href="quiz.html";
-
-}
-
-</script>
 
 <script>
 
 async function uploadFiles(){
 
-let qFile=document.getElementById("questionsFile").files[0];
-let aFile=document.getElementById("answersFile").files[0];
+const qFile=document.getElementById("questionsFile").files[0];
+const aFile=document.getElementById("answersFile").files[0];
 
-if(!qFile || !aFile){
-alert("Please select both files.");
+if(!qFile){
+alert("Please select the Questions file.");
 return;
 }
 
-let questionsText=await qFile.text();
-let answersText=await aFile.text();
+if(!aFile){
+alert("Please select the Answers file.");
+return;
+}
+
+const questionsText=await qFile.text();
+const answersText=await aFile.text();
 
 localStorage.setItem("questionsText",questionsText);
 localStorage.setItem("answersText",answersText);
@@ -113,7 +76,7 @@ window.location.href="quiz.html";
 }
 
 </script>
-</script>
+
 </body>
 
-                           </html>
+</html>
