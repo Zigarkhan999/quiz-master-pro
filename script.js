@@ -8,6 +8,14 @@ if(!questionsText || !answersText){
 
 let questions = parseQuestions(questionsText, answersText);
 
+console.log(questions);
+alert(JSON.stringify(questions));
+
+if(questions.length === 0){
+    alert("No questions found. Please check your files.");
+    window.location.href = "upload.html";
+}
+
 if(questions.length === 0){
     alert("No questions found. Please check your files.");
     window.location.href = "upload.html";
