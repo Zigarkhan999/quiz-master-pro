@@ -2,24 +2,20 @@ function parseQuestions(questionText, answerText){
 
 const questions=[];
 
-// Split each question
 const blocks=questionText.split(/\n(?=\d+\.)/);
 
-// Read answers like:
-// 1. B
-// 2. D
 const answers=[];
 
-const answerLines=answerText.split("\n");
+// Works with:
+// 1. **C)
+// 2. C)
+// 3. C
+const answerRegex=/\d+\.\s*\**([A-D])\)/g;
 
-for(let line of answerLines){
+let match;
 
-const m=line.match(/^\d+\.\s*([A-D])/);
-
-if(m){
-answers.push(m[1].charCodeAt(0)-65);
-}
-
+while((match=answerRegex.exec(answerText))!==null){
+answers.push(match[1].charCodeAt(0)-65);
 }
 
 let index=0;
@@ -30,21 +26,21 @@ block=block.trim();
 
 if(block==="") continue;
 
-const qMatch=block.match(/^\d+\.\s*(.*?)\n/s);
+let q=block.match(/^\d+\.\s*([\s\S]*?)A\)/);
 
-if(!qMatch) continue;
+if(!q) continue;
 
-const question=qMatch[1].trim();
+let question=q[1].trim();
 
-const optionRegex=/([A-D])\)\s*(.*?)(?=\s+[A-D]\)|$)/gs;
+let options=[];
 
-const options=[];
+let optionRegex=/[A-D]\)\s*(.*?)(?=\s+[A-D]\)|$)/gs;
 
 let opt;
 
 while((opt=optionRegex.exec(block))!==null){
 
-options.push(opt[2].trim());
+options.push(opt[1].trim());
 
 }
 
@@ -53,8 +49,10 @@ if(options.length===4){
 questions.push({
 
 question:question,
+
 options:options,
-answer:answers[index] ?? -1
+
+answer:answers[index]??0
 
 });
 
