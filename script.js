@@ -1,12 +1,31 @@
 let currentQuestion = 0;
 let score = 0;
-
+let timeLeft = 60;
+let timer;
 const question = document.getElementById("question");
 const message = document.getElementById("message");
 const buttons = document.querySelectorAll("button");
 
 function loadQuestion() {
+clearInterval(timer);
 
+timeLeft = 60;
+
+document.getElementById("timer").innerHTML = timeLeft;
+
+timer = setInterval(function(){
+
+timeLeft--;
+
+document.getElementById("timer").innerHTML = timeLeft;
+
+if(timeLeft <= 0){
+
+clearInterval(timer);
+
+}
+
+},1000);
     message.innerHTML = "";
 
     question.innerHTML = questions[currentQuestion].question;
