@@ -56,9 +56,17 @@ cursor:pointer;
 
 <p>Select your study PDF.</p>
 
-<input type="file" id="fileInput" accept=".txt,.md">
+<h2>Upload Questions</h2>
 
-<button onclick="uploadFile()">Upload</button>
+<input type="file" id="questionsFile" accept=".txt">
+
+<h2>Upload Answers</h2>
+
+<input type="file" id="answersFile" accept=".txt">
+
+<button onclick="uploadFiles()">
+Start Quiz
+</button>
 
 <br><br>
 
@@ -70,7 +78,17 @@ cursor:pointer;
 
 </div>
 <script>
-function uploadFile(){
+<script>
+
+function uploadFiles(){
+
+alert("Questions and Answers selected successfully!");
+
+window.location.href="quiz.html";
+
+}
+
+</script>
 
 let file=document.getElementById("fileInput").files[0];
 
