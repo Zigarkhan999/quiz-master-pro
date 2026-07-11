@@ -65,3 +65,80 @@ function loadQuestion(){
     startTimer();
 
             }
+function checkAnswer(selected){
+
+    clearInterval(timer);
+
+    let correct = questions[currentQuestion].answer;
+
+    let allButtons = options.querySelectorAll("button");
+
+    allButtons.forEach(btn => btn.disabled = true);
+
+    if(selected === correct){
+
+        message.textContent = "✅ Correct!";
+        message.style.color = "green";
+        score++;
+
+    }else{
+
+        message.textContent = "❌ Wrong!";
+        message.style.color = "red";
+
+        allButtons[correct].style.background = "green";
+        allButtons[selected].style.background = "red";
+
+    }
+
+    setTimeout(nextQuestion,1000);
+
+}
+
+function nextQuestion(){
+
+    currentQuestion++;
+
+    if(currentQuestion >= questions.length){
+
+        clearInterval(timer);
+
+        document.querySelector(".container").innerHTML = `
+        <h1>🎉 Quiz Finished</h1>
+        <h2>Your Score</h2>
+        <h1>${score} / ${questions.length}</h1>
+
+        <button onclick="location.href='upload.html'">
+        Start New Quiz
+        </button>
+        `;
+
+        return;
+
+    }
+
+    loadQuestion();
+
+}
+
+function startTimer(){
+
+    timer = setInterval(function(){
+
+        timeLeft--;
+
+        timerText.textContent = timeLeft;
+
+        if(timeLeft <= 0){
+
+            clearInterval(timer);
+
+            nextQuestion();
+
+        }
+
+    },1000);
+
+}
+
+loadQuestion();
