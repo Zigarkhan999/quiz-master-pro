@@ -90,23 +90,29 @@ window.location.href="quiz.html";
 
 </script>
 
-let file=document.getElementById("fileInput").files[0];
+<script>
 
-if(!file){
-alert("Please choose a file first.");
+async function uploadFiles(){
+
+let qFile=document.getElementById("questionsFile").files[0];
+let aFile=document.getElementById("answersFile").files[0];
+
+if(!qFile || !aFile){
+alert("Please select both files.");
 return;
 }
 
-let reader=new FileReader();
+let questionsText=await qFile.text();
+let answersText=await aFile.text();
 
-reader.onload=function(e){
-localStorage.setItem("quizFile",e.target.result);
+localStorage.setItem("questionsText",questionsText);
+localStorage.setItem("answersText",answersText);
+
 window.location.href="quiz.html";
-};
-
-reader.readAsText(file);
 
 }
+
+</script>
 </script>
 </body>
 
