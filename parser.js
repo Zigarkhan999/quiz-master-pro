@@ -1,4 +1,4 @@
-             function parseQuestions(questionText, answerText){
+    function parseQuestions(questionText, answerText){
 
 const questions=[];
 
@@ -9,24 +9,17 @@ questionText=questionText
 .replace(/^---.*$/gm,"")
 .trim();
 
-// Split into question blocks
-const blocks=questionText.split(/\n(?=\d+\.)/);
+// Split questions
+const blocks=questionText.split(/\n\s*(?=\d+\.)/);
 
 // Read answers
 const answers=[];
-
-// Works with:
-// 1. **C)
-// 2. C)
-// 3. C
 const answerRegex=/\d+\.\s*\**([A-D])\)/g;
 
 let match;
 
 while((match=answerRegex.exec(answerText))!==null){
-
 answers.push(match[1].charCodeAt(0)-65);
-
 }
 
 let answerIndex=0;
@@ -37,33 +30,28 @@ block=block.trim();
 
 if(block==="") continue;
 
-let qMatch=block.match(/^(\d+\.\s*[\s\S]*?)A\)/);
+// Question
+let qMatch=block.match(/^\d+\.\s*([\s\S]*?)A\)/);
 
 if(!qMatch) continue;
 
-let question=qMatch[1]
-.replace(/^\d+\.\s*/,"")
-.trim();
+let question=qMatch[1].trim();
 
-let optionRegex=/([A-D])\)\s*(.*?)(?=\s+[A-D]\)|$)/gs;
+// Options on ONE line
+let optionMatch=block.match(/A\)\s*(.*?)\s*B\)\s*(.*?)\s*C\)\s*(.*?)\s*D\)\s*(.*)/s);
 
-let options=[];
-
-let opt;
-
-while((opt=optionRegex.exec(block))!==null){
-
-options.push(opt[2].trim());
-
-}
-
-if(options.length===4){
+if(!optionMatch) continue;
 
 questions.push({
 
 question:question,
 
-options:options,
+options:[
+optionMatch[1].trim(),
+optionMatch[2].trim(),
+optionMatch[3].trim(),
+optionMatch[4].trim()
+],
 
 answer:answers[answerIndex] ?? 0
 
@@ -73,8 +61,6 @@ answerIndex++;
 
 }
 
-}
-
 return questions;
 
-    }   
+    }         
