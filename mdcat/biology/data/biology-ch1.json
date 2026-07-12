@@ -1,0 +1,35 @@
+[
+  {
+    "question": "Water is described as a polar molecule because:",
+    "options": [
+      "It has no charge",
+      "It carries a net positive charge",
+      "It has partial positive and negative charges due to unequal electron sharing",
+      "It is nonpolar"
+    ],
+    "answer": 2,
+    "explanation": "Oxygen attracts electrons more strongly than hydrogen, so water has partial positive and negative charges."
+  },
+  {
+    "question": "The attractive force between water molecules is called:",
+    "options": [
+      "Adhesion",
+      "Cohesion",
+      "Ionization",
+      "Diffusion"
+    ],
+    "answer": 1,
+    "explanation": "Cohesion is the attraction between water molecules caused by hydrogen bonding."
+  },
+  {
+    "question": "Ice floats on water because:",
+    "options": [
+      "It is heavier",
+      "It is warmer",
+      "It has lower density than liquid water",
+      "It contains air"
+    ],
+    "answer": 2,
+    "explanation": "Hydrogen bonds form an open structure in ice, making it less dense than liquid water."
+  }
+]
