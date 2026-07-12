@@ -1,7 +1,7 @@
 let questionsText = localStorage.getItem("questionsText");
 let answersText = localStorage.getItem("answersText");
 
-if(!questionsText || !answersText){
+if (!questionsText || !answersText) {
     alert("Please upload Questions and Answers first.");
     window.location.href = "upload.html";
 }
@@ -9,15 +9,9 @@ if(!questionsText || !answersText){
 let questions = parseQuestions(questionsText, answersText);
 
 console.log(questions);
-alert(JSON.stringify(questions));
 
-if(questions.length === 0){
-    alert("No questions found. Please check your files.");
-    window.location.href = "upload.html";
-}
-
-if(questions.length === 0){
-    alert("No questions found. Please check your files.");
+if (questions.length === 0) {
+    alert("Parser could not read your file.");
     window.location.href = "upload.html";
 }
 
@@ -50,52 +44,54 @@ function loadQuestion(){
     "Question " + (currentQuestion + 1) + " / " + questions.length;
 
     progressBar.style.width =
-    ((currentQuestion + 1) / questions.length * 100) + "%";
+    ((currentQuestion + 1) / questions.length) * 100 + "%";
 
     options.innerHTML = "";
 
-    for(let i = 0; i < q.options.length; i++){
+    q.options.forEach(function(option,index){
 
         let btn = document.createElement("button");
 
-        btn.textContent = q.options[i];
+        btn.textContent = option;
 
         btn.onclick = function(){
 
-            checkAnswer(i);
+            checkAnswer(index);
 
         };
 
         options.appendChild(btn);
 
-    }
+    });
 
     startTimer();
 
-                }
+}
+
 function checkAnswer(selected){
 
     clearInterval(timer);
 
     let correct = questions[currentQuestion].answer;
 
-    let allButtons = options.querySelectorAll("button");
+    let buttons = options.querySelectorAll("button");
 
-    allButtons.forEach(btn => btn.disabled = true);
+    buttons.forEach(btn=>btn.disabled=true);
 
-    if(selected === correct){
+    if(selected===correct){
 
-        message.textContent = "✅ Correct!";
-        message.style.color = "green";
         score++;
+
+        message.textContent="✅ Correct!";
+        message.style.color="green";
 
     }else{
 
-        message.textContent = "❌ Wrong!";
-        message.style.color = "red";
+        message.textContent="❌ Wrong!";
+        message.style.color="red";
 
-        allButtons[correct].style.background = "green";
-        allButtons[selected].style.background = "red";
+        buttons[correct].style.background="green";
+        buttons[selected].style.background="red";
 
     }
 
@@ -107,18 +103,24 @@ function nextQuestion(){
 
     currentQuestion++;
 
-    if(currentQuestion >= questions.length){
+    if(currentQuestion>=questions.length){
 
         clearInterval(timer);
 
-        document.querySelector(".container").innerHTML = `
+        document.querySelector(".container").innerHTML=`
+
         <h1>🎉 Quiz Finished</h1>
+
         <h2>Your Score</h2>
+
         <h1>${score} / ${questions.length}</h1>
 
         <button onclick="location.href='upload.html'">
+
         Start New Quiz
+
         </button>
+
         `;
 
         return;
@@ -131,13 +133,13 @@ function nextQuestion(){
 
 function startTimer(){
 
-    timer = setInterval(function(){
+    timer=setInterval(function(){
 
         timeLeft--;
 
-        timerText.textContent = timeLeft;
+        timerText.textContent=timeLeft;
 
-        if(timeLeft <= 0){
+        if(timeLeft<=0){
 
             clearInterval(timer);
 
