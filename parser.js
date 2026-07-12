@@ -1,67 +1,99 @@
 function parseQuestions(questionText, answerText){
 
-const questions=[];
+    const questions = [];
 
-const blocks=questionText.split(/\n(?=\d+\.)/);
+    // Remove markdown headings
+    questionText = questionText
+        .replace(/^#.*$/gm,"")
+        .replace(/^##.*$/gm,"")
+        .replace(/^---.*$/gm,"")
+        .trim();
 
-const answers=[];
+    // Split into question blocks
+    const blocks = questionText.split(/\n(?=\d+\.)/);
 
-// Works with:
-// 1. **C)
-// 2. C)
-// 3. C
-const answerRegex=/\d+\.\s*\**([A-D])\)/g;
+    // Read answers
+    const answers = [];
 
-let match;
+    const answerRegex = /\d+\.\s*\**([A-D])\)/g;
 
-while((match=answerRegex.exec(answerText))!==null){
-answers.push(match[1].charCodeAt(0)-65);
-}
+    let match;
 
-let index=0;
+    while((match = answerRegex.exec(answerText)) !== null){
 
-for(let block of blocks){
+        answers.push(match[1].charCodeAt(0)-65);
 
-block=block.trim();
+    }
 
-if(block==="") continue;
+    let answerIndex = 0;
 
-let q=block.match(/^\d+\.\s*([\s\S]*?)A\)/);
+    for(let block of blocks){
 
-if(!q) continue;
+        block = block.trim();
 
-let question=q[1].trim();
+        if(block==="") continue;
 
-let options=[];
+        const lines = block.split("\n");
 
-let optionRegex=/[A-D]\)\s*(.*?)(?=\s+[A-D]\)|$)/gs;
+        let question = "";
+        let options = [];
 
-let opt;
+        for(let line of lines){
 
-while((opt=optionRegex.exec(block))!==null){
+            line = line.trim();
 
-options.push(opt[1].trim());
+            if(line==="") continue;
 
-}
+            if(/^\d+\./.test(line)){
 
-if(options.length===4){
+                question = line.replace(/^\d+\.\s*/,"").trim();
 
-questions.push({
+            }
 
-question:question,
+            else if(/^A\)/.test(line)){
 
-options:options,
+                options.push(line.replace(/^A\)\s*/,"").trim());
 
-answer:answers[index]??0
+            }
 
-});
+            else if(/^B\)/.test(line)){
 
-index++;
+                options.push(line.replace(/^B\)\s*/,"").trim());
 
-}
+            }
 
-}
+            else if(/^C\)/.test(line)){
 
-return questions;
+                options.push(line.replace(/^C\)\s*/,"").trim());
 
-}
+            }
+
+            else if(/^D\)/.test(line)){
+
+                options.push(line.replace(/^D\)\s*/,"").trim());
+
+            }
+
+        }
+
+        if(question && options.length===4){
+
+            questions.push({
+
+                question:question,
+
+                options:options,
+
+                answer:answers[answerIndex] ?? 0
+
+            });
+
+            answerIndex++;
+
+        }
+
+    }
+
+    return questions;
+
+        }
