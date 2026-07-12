@@ -1,19 +1,8 @@
-let questionsText = localStorage.getItem("questionsText");
-let answersText = localStorage.getItem("answersText");
-
-if (!questionsText || !answersText) {
-    alert("Please upload Questions and Answers first.");
-    window.location.href = "upload.html";
-}
-
-let questions = parseQuestions(questionsText, answersText);
-
-alert("Questions found: " + questions.length);
-console.log(questions);
+let questions = JSON.parse(localStorage.getItem("quizData")) || [];
 
 if (questions.length === 0) {
-    alert("No questions found.");
-    window.location.href = "upload.html";
+    alert("No quiz found.");
+    window.location.href = "index.html";
 }
 
 let currentQuestion = 0;
@@ -28,7 +17,7 @@ const timerText = document.getElementById("timer");
 const questionNumber = document.getElementById("questionNumber");
 const progressBar = document.getElementById("progressBar");
 
-function loadQuestion() {
+function loadQuestion(){
 
     clearInterval(timer);
 
@@ -42,20 +31,20 @@ function loadQuestion() {
     question.textContent = q.question;
 
     questionNumber.textContent =
-        "Question " + (currentQuestion + 1) + " / " + questions.length;
+    "Question " + (currentQuestion+1) + " / " + questions.length;
 
     progressBar.style.width =
-        ((currentQuestion + 1) / questions.length * 100) + "%";
+    ((currentQuestion+1)/questions.length*100)+"%";
 
-    options.innerHTML = "";
+    options.innerHTML="";
 
-    q.options.forEach(function (option, index) {
+    q.options.forEach(function(option,index){
 
-        let btn = document.createElement("button");
+        let btn=document.createElement("button");
 
-        btn.textContent = option;
+        btn.textContent=option;
 
-        btn.onclick = function () {
+        btn.onclick=function(){
 
             checkAnswer(index);
 
@@ -69,50 +58,57 @@ function loadQuestion() {
 
 }
 
-function checkAnswer(selected) {
+function checkAnswer(selected){
 
     clearInterval(timer);
 
-    let correct = questions[currentQuestion].answer;
+    let correct=questions[currentQuestion].answer;
 
-    let buttons = options.querySelectorAll("button");
+    let buttons=options.querySelectorAll("button");
 
-    buttons.forEach(btn => btn.disabled = true);
+    buttons.forEach(btn=>btn.disabled=true);
 
-    if (selected === correct) {
+    if(selected===correct){
 
         score++;
-        message.textContent = "✅ Correct!";
-        message.style.color = "green";
 
-    } else {
+        message.innerHTML="✅ Correct";
 
-        message.textContent = "❌ Wrong!";
-        message.style.color = "red";
+        message.style.color="green";
 
-        if (buttons[correct]) buttons[correct].style.background = "green";
-        if (buttons[selected]) buttons[selected].style.background = "red";
+    }else{
+
+        message.innerHTML="❌ Wrong";
+
+        message.style.color="red";
+
+        buttons[correct].style.background="green";
+
+        buttons[selected].style.background="red";
 
     }
 
-    setTimeout(nextQuestion, 1000);
+    setTimeout(nextQuestion,1500);
 
 }
 
-function nextQuestion() {
+function nextQuestion(){
 
     currentQuestion++;
 
-    if (currentQuestion >= questions.length) {
+    if(currentQuestion>=questions.length){
 
-        clearInterval(timer);
-
-        document.querySelector(".container").innerHTML = `
+        document.querySelector(".container").innerHTML=`
         <h1>🎉 Quiz Finished</h1>
+
         <h2>Your Score</h2>
+
         <h1>${score} / ${questions.length}</h1>
-        <button onclick="location.href='upload.html'">
-        Start New Quiz
+
+        <button onclick="location.href='index.html'">
+
+        Back
+
         </button>
         `;
 
@@ -124,15 +120,15 @@ function nextQuestion() {
 
 }
 
-function startTimer() {
+function startTimer(){
 
-    timer = setInterval(function () {
+    timer=setInterval(function(){
 
         timeLeft--;
 
-        timerText.textContent = timeLeft;
+        timerText.textContent=timeLeft;
 
-        if (timeLeft <= 0) {
+        if(timeLeft<=0){
 
             clearInterval(timer);
 
@@ -140,8 +136,9 @@ function startTimer() {
 
         }
 
-    }, 1000);
+    },1000);
 
 }
 
 loadQuestion();
+    
