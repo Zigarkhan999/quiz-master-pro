@@ -1,32 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Chapter 1 Quiz</title>
+<title>Chapter 1 - Biological Molecules</title>
 
 <link rel="stylesheet" href="../../style.css">
 
-<style>
-
-#options button{
-display:block;
-width:100%;
-margin:10px 0;
+<script src="data/chapter1.js"></script>
+<script>
+function startQuiz(){
+    localStorage.setItem("quizData", JSON.stringify(chapter1));
+    window.location.href="../../quiz.html";
 }
-
-#explanation{
-margin-top:20px;
-padding:15px;
-background:#eef7ff;
-border-radius:10px;
-display:none;
-}
-
-</style>
+</script>
 
 </head>
 
@@ -38,14 +25,10 @@ display:none;
 
 <h2>Biological Molecules</h2>
 
-<h3 id="question">Loading...</h3>
+<p>MCQs: 3</p>
 
-<div id="options"></div>
-
-<div id="explanation"></div>
-
-<button id="nextBtn" style="display:none;">
-Next Question
+<button onclick="startQuiz()">
+🚀 Start Quiz
 </button>
 
 <br><br>
@@ -56,109 +39,5 @@ Next Question
 
 </div>
 
-<script>
-
-let questions=[];
-let current=0;
-let score=0;
-
-fetch("data/chapter1.json")
-
-.then(response=>response.json())
-
-.then(data=>{
-
-questions=data;
-
-showQuestion();
-
-});
-
-function showQuestion(){
-
-document.getElementById("nextBtn").style.display="none";
-document.getElementById("explanation").style.display="none";
-
-let q=questions[current];
-
-document.getElementById("question").innerHTML=
-(current+1)+". "+q.question;
-
-let options=document.getElementById("options");
-
-options.innerHTML="";
-
-q.options.forEach((option,index)=>{
-
-let btn=document.createElement("button");
-
-btn.innerHTML=option;
-
-btn.onclick=function(){
-
-checkAnswer(index);
-
-};
-
-options.appendChild(btn);
-
-});
-
-}
-
-function checkAnswer(selected){
-
-let q=questions[current];
-
-let explanation=document.getElementById("explanation");
-
-if(selected===q.answer){
-
-score++;
-
-explanation.innerHTML=
-"<b>✅ Correct</b><br><br>"+q.explanation;
-
-}else{
-
-explanation.innerHTML=
-"<b>❌ Wrong</b><br><br>"+q.explanation;
-
-}
-
-explanation.style.display="block";
-
-document.querySelectorAll("#options button").forEach(btn=>{
-
-btn.disabled=true;
-
-});
-
-document.getElementById("nextBtn").style.display="block";
-
-}
-
-document.getElementById("nextBtn").onclick=function(){
-
-current++;
-
-if(current>=questions.length){
-
-document.querySelector(".container").innerHTML=
-"<h1>🎉 Quiz Finished</h1>"+
-"<h2>Your Score: "+score+" / "+questions.length+"</h2>"+
-"<button onclick=\"location.href='index.html'\">Back</button>";
-
-return;
-
-}
-
-showQuestion();
-
-};
-
-</script>
-
 </body>
-
 </html>
