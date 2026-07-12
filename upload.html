@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Upload Quiz Files</title>
+<title>Upload Files</title>
 
 <link rel="stylesheet" href="style.css">
 
@@ -18,21 +18,15 @@
 
 <h1>📄 Upload Quiz Files</h1>
 
-<p>Select your Questions file and Answer Key.</p>
+<p>Select your Questions file and Answers file.</p>
 
-<h3>Questions File</h3>
+<h2>Questions File</h2>
 
-<input
-type="file"
-id="questionsFile"
-accept=".md,.txt,.pdf">
+<input type="file" id="questionsFile" accept=".txt,.md">
 
-<h3>Answers File</h3>
+<h2>Answers File</h2>
 
-<input
-type="file"
-id="answersFile"
-accept=".md,.txt,.pdf">
+<input type="file" id="answersFile" accept=".txt,.md">
 
 <button onclick="uploadFiles()">
 🚀 Start Quiz
@@ -40,11 +34,9 @@ accept=".md,.txt,.pdf">
 
 <br><br>
 
-<a href="index.html">
-<button>
-🏠 Back Home
+<button onclick="location.href='index.html'">
+🏠 Back to Home
 </button>
-</a>
 
 </div>
 
@@ -55,14 +47,12 @@ async function uploadFiles(){
 const qFile=document.getElementById("questionsFile").files[0];
 const aFile=document.getElementById("answersFile").files[0];
 
-if(!qFile){
-alert("Please select the Questions file.");
-return;
-}
+if(!qFile || !aFile){
 
-if(!aFile){
-alert("Please select the Answers file.");
+alert("Please select both files.");
+
 return;
+
 }
 
 const questionsText=await qFile.text();
@@ -71,7 +61,7 @@ const answersText=await aFile.text();
 localStorage.setItem("questionsText",questionsText);
 localStorage.setItem("answersText",answersText);
 
-window.location.href="quiz.html";
+location.href="quiz.html";
 
 }
 
