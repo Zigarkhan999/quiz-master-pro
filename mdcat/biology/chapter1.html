@@ -1,19 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Chapter 1 - Biological Molecules</title>
 
 <link rel="stylesheet" href="../../style.css">
-
-<script src="data/chapter1.js"></script>
-<script>
-function startQuiz(){
-    localStorage.setItem("quizData", JSON.stringify(chapter1));
-    window.location.href="../../quiz.html";
-}
-</script>
 
 </head>
 
@@ -39,5 +34,38 @@ function startQuiz(){
 
 </div>
 
+<script>
+
+let chapter1 = [];
+
+async function loadQuiz(){
+
+    const response = await fetch("data/chapter1.json");
+
+    chapter1 = await response.json();
+
+}
+
+loadQuiz();
+
+function startQuiz(){
+
+    if(chapter1.length===0){
+
+        alert("Quiz is still loading. Please wait a second.");
+
+        return;
+
+    }
+
+    localStorage.setItem("quizData",JSON.stringify(chapter1));
+
+    window.location.href="../../quiz.html";
+
+}
+
+</script>
+
 </body>
+
 </html>
