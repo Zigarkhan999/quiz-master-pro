@@ -8,7 +8,8 @@ if (!questionsText || !answersText) {
 
 let questions = parseQuestions(questionsText, answersText);
 
-console.log("Questions Loaded:", questions);
+alert("Questions found: " + questions.length);
+console.log(questions);
 
 if (questions.length === 0) {
     alert("No questions found.");
