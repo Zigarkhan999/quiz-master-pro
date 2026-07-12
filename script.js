@@ -8,10 +8,10 @@ if (!questionsText || !answersText) {
 
 let questions = parseQuestions(questionsText, answersText);
 
-console.log(questions);
+console.log("Questions Loaded:", questions);
 
 if (questions.length === 0) {
-    alert("Parser could not read your file.");
+    alert("No questions found.");
     window.location.href = "upload.html";
 }
 
@@ -27,7 +27,7 @@ const timerText = document.getElementById("timer");
 const questionNumber = document.getElementById("questionNumber");
 const progressBar = document.getElementById("progressBar");
 
-function loadQuestion(){
+function loadQuestion() {
 
     clearInterval(timer);
 
@@ -41,20 +41,20 @@ function loadQuestion(){
     question.textContent = q.question;
 
     questionNumber.textContent =
-    "Question " + (currentQuestion + 1) + " / " + questions.length;
+        "Question " + (currentQuestion + 1) + " / " + questions.length;
 
     progressBar.style.width =
-    ((currentQuestion + 1) / questions.length) * 100 + "%";
+        ((currentQuestion + 1) / questions.length * 100) + "%";
 
     options.innerHTML = "";
 
-    q.options.forEach(function(option,index){
+    q.options.forEach(function (option, index) {
 
         let btn = document.createElement("button");
 
         btn.textContent = option;
 
-        btn.onclick = function(){
+        btn.onclick = function () {
 
             checkAnswer(index);
 
@@ -68,7 +68,7 @@ function loadQuestion(){
 
 }
 
-function checkAnswer(selected){
+function checkAnswer(selected) {
 
     clearInterval(timer);
 
@@ -76,51 +76,43 @@ function checkAnswer(selected){
 
     let buttons = options.querySelectorAll("button");
 
-    buttons.forEach(btn=>btn.disabled=true);
+    buttons.forEach(btn => btn.disabled = true);
 
-    if(selected===correct){
+    if (selected === correct) {
 
         score++;
+        message.textContent = "✅ Correct!";
+        message.style.color = "green";
 
-        message.textContent="✅ Correct!";
-        message.style.color="green";
+    } else {
 
-    }else{
+        message.textContent = "❌ Wrong!";
+        message.style.color = "red";
 
-        message.textContent="❌ Wrong!";
-        message.style.color="red";
-
-        buttons[correct].style.background="green";
-        buttons[selected].style.background="red";
+        if (buttons[correct]) buttons[correct].style.background = "green";
+        if (buttons[selected]) buttons[selected].style.background = "red";
 
     }
 
-    setTimeout(nextQuestion,1000);
+    setTimeout(nextQuestion, 1000);
 
 }
 
-function nextQuestion(){
+function nextQuestion() {
 
     currentQuestion++;
 
-    if(currentQuestion>=questions.length){
+    if (currentQuestion >= questions.length) {
 
         clearInterval(timer);
 
-        document.querySelector(".container").innerHTML=`
-
+        document.querySelector(".container").innerHTML = `
         <h1>🎉 Quiz Finished</h1>
-
         <h2>Your Score</h2>
-
         <h1>${score} / ${questions.length}</h1>
-
         <button onclick="location.href='upload.html'">
-
         Start New Quiz
-
         </button>
-
         `;
 
         return;
@@ -131,15 +123,15 @@ function nextQuestion(){
 
 }
 
-function startTimer(){
+function startTimer() {
 
-    timer=setInterval(function(){
+    timer = setInterval(function () {
 
         timeLeft--;
 
-        timerText.textContent=timeLeft;
+        timerText.textContent = timeLeft;
 
-        if(timeLeft<=0){
+        if (timeLeft <= 0) {
 
             clearInterval(timer);
 
@@ -147,7 +139,7 @@ function startTimer(){
 
         }
 
-    },1000);
+    }, 1000);
 
 }
 
