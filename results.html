@@ -1,45 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quiz Results</title>
 
 <style>
-
-body{
-font-family:Arial,sans-serif;
-background:#f2f2f2;
-margin:0;
-padding:20px;
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  margin: 0;
+  padding: 20px;
 }
 
-.container{
-max-width:500px;
-margin:auto;
-background:white;
-padding:25px;
-border-radius:15px;
-box-shadow:0 0 10px rgba(0,0,0,.2);
-text-align:center;
+.container {
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(0,0,0,.2);
+  text-align: center;
 }
 
-h1{
-color:#28a745;
+h1 {
+  color: #28a745;
+  margin-bottom: 5px;
 }
 
-button{
-width:100%;
-padding:14px;
-margin-top:15px;
-font-size:18px;
-border:none;
-border-radius:10px;
-background:#007BFF;
-color:white;
-cursor:pointer;
+h3 {
+  color: #555;
+  margin-top: 5px;
+  font-weight: normal;
 }
 
+.stats-box {
+  background: #e9ecef;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 15px 0;
+  font-weight: bold;
+  color: #333;
+}
+
+.review-section {
+  text-align: left;
+  margin-top: 25px;
+}
+
+.review-section h2 {
+  text-align: center;
+  color: #007BFF;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  background: #007BFF;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.btn-home {
+  background: #6c757d;
+}
 </style>
 
 </head>
@@ -48,21 +81,84 @@ cursor:pointer;
 
 <div class="container">
 
-<h1>🎉 Quiz Finished</h1>
+  <h1>🎉 Quiz Finished</h1>
+  
+  <h3 id="student-info">Student: Loading...</h3>
 
-<h2 id="finalScore">
-Your Score: 0 / 0
-</h2>
+  <h2 id="final-score" style="color: #28a745;">
+    Score: 0 / 0
+  </h2>
 
-<button onclick="window.location.href='quiz.html'">
-🔄 Play Again
-</button>
+  <div class="stats-box" id="summary-stats">
+    Correct: 0 | Wrong: 0 | Skipped: 0
+  </div>
 
-<button onclick="window.location.href='index.html'">
-🏠 Home
-</button>
+  <button onclick="window.location.href='quiz.html'">
+    🔄 Play Again
+  </button>
+
+  <button class="btn-home" onclick="window.location.href='index.html'">
+    🏠 Home
+  </button>
+
+  <!-- ANSWER ANALYSIS SECTION -->
+  <div class="review-section">
+    <h2>Detailed Answer Analysis</h2>
+    <div id="review-container"></div>
+  </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const resultData = JSON.parse(localStorage.getItem('lastExamResult'));
+  if (!resultData) {
+    window.location.href = 'index.html';
+    return;
+  }
+
+  const { studentName, studentId, quizData, userAnswers } = resultData;
+  let score = 0;
+  let wrongCount = 0;
+  let skippedCount = 0;
+
+  const reviewContainer = document.getElementById('review-container');
+  reviewContainer.innerHTML = '';
+
+  quizData.forEach((q, index) => {
+    const userAns = userAnswers ? userAnswers[index] : undefined;
+    const isCorrect = userAns === q.answer;
+
+    if (userAns === undefined) {
+      skippedCount++;
+    } else if (isCorrect) {
+      score++;
+    } else {
+      wrongCount++;
+    }
+
+    // Generate Wrong/Correct Review Card
+    const reviewCard = document.createElement('div');
+    reviewCard.style.cssText = `padding: 12px; margin-bottom: 12px; border-radius: 8px; border: 1px solid ${isCorrect ? '#16a34a' : '#dc2626'}; background: ${isCorrect ? '#f0fdf4' : '#fef2f2'};`;
+
+    const userAnsText = userAns !== undefined ? q.options[userAns] : "Not Attempted";
+    const correctAnsText = q.options[q.answer];
+
+    reviewCard.innerHTML = `
+      <p style="margin: 0 0 6px 0;"><strong>Q${index + 1}: ${q.question}</strong></p>
+      <p style="margin:4px 0;"><strong>Your Answer:</strong> ${userAnsText} ${isCorrect ? '✅' : '❌'}</p>
+      ${!isCorrect ? `<p style="margin:4px 0; color:#16a34a;"><strong>Correct Answer:</strong> ${correctAnsText}</p>` : ''}
+    `;
+
+    reviewContainer.appendChild(reviewCard);
+  });
+
+  // Display Overview
+  document.getElementById('student-info').textContent = `Student: ${studentName || 'Student'} (ID: ${studentId || 'N/A'})`;
+  document.getElementById('final-score').textContent = `Score: ${score} / ${quizData.length} (${((score / quizData.length) * 100).toFixed(1)}%)`;
+  document.getElementById('summary-stats').textContent = `Correct: ${score} | Wrong: ${wrongCount} | Skipped: ${skippedCount}`;
+});
+</script>
 
 </body>
 </html>
