@@ -8,7 +8,7 @@
 <style>
   textarea {
     width: 100%;
-    height: 220px;
+    height: 250px;
     padding: 10px;
     border-radius: 8px;
     border: 1px solid #ccc;
@@ -21,24 +21,26 @@
 
 <div class="container">
   <h1>📤 Upload MCQs</h1>
-  <p>Paste your JSON MCQs array below to update your quiz database:</p>
+  <p>Select subject and paste your JSON array:</p>
 
-  <textarea id="jsonInput" placeholder='[
-  {
-    "subject": "biology",
-    "question": "Sample Question?",
-    "options": ["Opt 1", "Opt 2", "Opt 3", "Opt 4"],
-    "answer": 0
-  }
-]'></textarea>
+  <label style="font-weight:bold; display:block; margin-bottom:5px;">Target Subject:</label>
+  <select id="subjectSelect" style="width:100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid #ccc; font-size:16px;">
+    <option value="biology">🧬 Biology</option>
+    <option value="chemistry">🧪 Chemistry</option>
+    <option value="physics">⚡ Physics</option>
+  </select>
 
-  <button onclick="saveAndStartQuiz()" style="margin-top: 15px; background: #2563eb;">🚀 Save & Start Test</button>
-  <button onclick="location.href='index.html'" style="background: #6c757d; margin-top: 10px;">🏠 Back to Home</button>
+  <textarea id="jsonInput" placeholder='Paste your JSON MCQs array here...'></textarea>
+
+  <button onclick="saveAndStartQuiz()" style="margin-top: 15px; background: #16a34a; width:100%;">🚀 Save & Start Selected Test</button>
+  <button onclick="location.href='index.html'" style="background: #6c757d; margin-top: 10px; width:100%;">🏠 Back to Home</button>
 </div>
 
 <script>
 function saveAndStartQuiz() {
   const inputText = document.getElementById('jsonInput').value.trim();
+  const selectedSubject = document.getElementById('subjectSelect').value;
+
   if (!inputText) {
     alert("Pehle JSON MCQs paste karein!");
     return;
@@ -47,22 +49,19 @@ function saveAndStartQuiz() {
   try {
     const newQuestions = JSON.parse(inputText);
     if (!Array.isArray(newQuestions)) {
-      alert("Format galat hai! Input ek JSON Array [...] hona chahiye.");
+      alert("Format galat hai! Code ek Array [...] se shuru aur khatam hona chahiye.");
       return;
     }
 
-    // Default data overwrite / save karna
-    window.defaultQuizData = newQuestions;
-    localStorage.setItem('customQuizData', JSON.stringify(newQuestions));
+    // Har subject ka alag storage key
+    localStorage.setItem('quiz_' + selectedSubject, JSON.stringify(newQuestions));
+    localStorage.setItem('selectedSubject', selectedSubject);
 
-    const targetSubject = newQuestions[0]?.subject || 'biology';
-    localStorage.setItem('selectedSubject', targetSubject);
-
-    alert("MCQs successfully upload ho gaye hain!");
+    alert(`${selectedSubject.toUpperCase()} ke ${newQuestions.length} MCQs successfully save ho gaye hain!`);
     window.location.href = 'quiz.html';
 
   } catch (e) {
-    alert("Invalid JSON Format! Apne JSON code ka syntax check karein.");
+    alert("JSON Format mein error hai! Syntax check karein.");
   }
 }
 </script>
