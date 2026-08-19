@@ -21,22 +21,49 @@
 
 <div class="container">
   <h1>📤 Upload MCQs</h1>
-  <p>Select subject and paste your JSON array:</p>
+  <p>Select Subject & Paste your JSON array below:</p>
 
-  <label style="font-weight:bold; display:block; margin-bottom:5px;">Target Subject:</label>
+  <label style="font-weight:bold; display:block; margin-bottom:5px;">Select Subject:</label>
   <select id="subjectSelect" style="width:100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid #ccc; font-size:16px;">
-    <option value="biology">🧬 Biology</option>
     <option value="chemistry">🧪 Chemistry</option>
+    <option value="biology">🧬 Biology</option>
     <option value="physics">⚡ Physics</option>
   </select>
 
   <textarea id="jsonInput" placeholder='Paste your JSON MCQs array here...'></textarea>
 
-  <button onclick="saveAndStartQuiz()" style="margin-top: 15px; background: #16a34a; width:100%;">🚀 Save & Start Selected Test</button>
+  <button onclick="saveAndStartQuiz()" style="margin-top: 15px; background: #16a34a; width:100%;">🚀 Save & Start Test</button>
   <button onclick="location.href='index.html'" style="background: #6c757d; margin-top: 10px; width:100%;">🏠 Back to Home</button>
 </div>
 
 <script>
+function normalizeJSONAnswers(questions) {
+  return questions.map(q => {
+    let ans = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : q.correct_answer);
+    let ansIdx = 0;
+
+    if (typeof ans === 'string') {
+      let cleanAns = ans.trim().toUpperCase();
+      if (cleanAns === 'A' || cleanAns === '0') ansIdx = 0;
+      else if (cleanAns === 'B' || cleanAns === '1') ansIdx = 1;
+      else if (cleanAns === 'C' || cleanAns === '2') ansIdx = 2;
+      else if (cleanAns === 'D' || cleanAns === '3') ansIdx = 3;
+      else if (q.options && Array.isArray(q.options)) {
+        let matchIdx = q.options.findIndex(opt => String(opt).trim().toLowerCase() === ans.trim().toLowerCase());
+        if (matchIdx !== -1) ansIdx = matchIdx;
+      }
+    } else if (typeof ans === 'number') {
+      ansIdx = ans;
+    }
+
+    return {
+      question: q.question || q.qText || "",
+      options: q.options || [],
+      answer: ansIdx
+    };
+  });
+}
+
 function saveAndStartQuiz() {
   const inputText = document.getElementById('jsonInput').value.trim();
   const selectedSubject = document.getElementById('subjectSelect').value;
@@ -47,21 +74,23 @@ function saveAndStartQuiz() {
   }
 
   try {
-    const newQuestions = JSON.parse(inputText);
-    if (!Array.isArray(newQuestions)) {
-      alert("Format galat hai! Code ek Array [...] se shuru aur khatam hona chahiye.");
+    let rawQuestions = JSON.parse(inputText);
+    if (!Array.isArray(rawQuestions)) {
+      alert("Format galat hai! JSON ek array [...] hona chahiye.");
       return;
     }
 
-    // Har subject ka alag storage key
-    localStorage.setItem('quiz_' + selectedSubject, JSON.stringify(newQuestions));
+    // Auto-fix letter answers (A/B/C/D) to numbers (0/1/2/3)
+    const formattedQuestions = normalizeJSONAnswers(rawQuestions);
+
+    localStorage.setItem('quiz_' + selectedSubject, JSON.stringify(formattedQuestions));
     localStorage.setItem('selectedSubject', selectedSubject);
 
-    alert(`${selectedSubject.toUpperCase()} ke ${newQuestions.length} MCQs successfully save ho gaye hain!`);
+    alert(`${selectedSubject.toUpperCase()} ke ${formattedQuestions.length} MCQs successfully save ho gaye hain!`);
     window.location.href = 'quiz.html';
 
   } catch (e) {
-    alert("JSON Format mein error hai! Syntax check karein.");
+    alert("JSON Syntax error! Apne code mein double quotes (\") aur commas (,) check karein.");
   }
 }
 </script>
