@@ -39,6 +39,21 @@
 <script>
 function normalizeJSONAnswers(questions) {
   return questions.map(q => {
+    let optsArray = [];
+
+    // 1. Convert options Object {"A": "...", "B": "..."} to Array ["...", "..."]
+    if (Array.isArray(q.options)) {
+      optsArray = q.options;
+    } else if (typeof q.options === 'object' && q.options !== null) {
+      optsArray = [
+        q.options.A || q.options.a || "",
+        q.options.B || q.options.b || "",
+        q.options.C || q.options.c || "",
+        q.options.D || q.options.d || ""
+      ];
+    }
+
+    // 2. Convert Answer "A", "B", "C", "D" to index 0, 1, 2, 3
     let ans = q.answer !== undefined ? q.answer : (q.correct !== undefined ? q.correct : q.correct_answer);
     let ansIdx = 0;
 
@@ -48,8 +63,8 @@ function normalizeJSONAnswers(questions) {
       else if (cleanAns === 'B' || cleanAns === '1') ansIdx = 1;
       else if (cleanAns === 'C' || cleanAns === '2') ansIdx = 2;
       else if (cleanAns === 'D' || cleanAns === '3') ansIdx = 3;
-      else if (q.options && Array.isArray(q.options)) {
-        let matchIdx = q.options.findIndex(opt => String(opt).trim().toLowerCase() === ans.trim().toLowerCase());
+      else {
+        let matchIdx = optsArray.findIndex(opt => String(opt).trim().toLowerCase() === ans.trim().toLowerCase());
         if (matchIdx !== -1) ansIdx = matchIdx;
       }
     } else if (typeof ans === 'number') {
@@ -58,7 +73,7 @@ function normalizeJSONAnswers(questions) {
 
     return {
       question: q.question || q.qText || "",
-      options: q.options || [],
+      options: optsArray,
       answer: ansIdx
     };
   });
@@ -80,7 +95,7 @@ function saveAndStartQuiz() {
       return;
     }
 
-    // Auto-fix letter answers (A/B/C/D) to numbers (0/1/2/3)
+    // Auto-fix options object and letter answers
     const formattedQuestions = normalizeJSONAnswers(rawQuestions);
 
     localStorage.setItem('quiz_' + selectedSubject, JSON.stringify(formattedQuestions));
@@ -90,10 +105,11 @@ function saveAndStartQuiz() {
     window.location.href = 'quiz.html';
 
   } catch (e) {
-    alert("JSON Syntax error! Apne code mein double quotes (\") aur commas (,) check karein.");
+    alert("JSON Syntax error! Double quotes (\") aur commas (,) check karein.");
   }
 }
 </script>
 
 </body>
-</html>
+  </html>
+  
