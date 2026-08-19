@@ -1,52 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quiz Practice</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <div class="container">
-
-  <!-- Header Info -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-    <h2 id="subjectTitle" style="text-transform: capitalize; margin: 0;">Quiz</h2>
-    <div style="font-weight: bold; font-size: 18px; color: #dc2626;">
-      ⏳ Time Left: <span id="timer">60</span>s
-    </div>
+  <h2 id="subjectTitle">Quiz</h2>
+  <div id="progressBarContainer" style="width: 100%; background: #e2e8f0; height: 10px; border-radius: 5px;">
+    <div id="progressBar" style="width: 0%; background: #2563eb; height: 100%;"></div>
   </div>
-
-  <!-- Progress Bar -->
-  <div style="width: 100%; background-color: #e2e8f0; border-radius: 10px; height: 10px; margin-bottom: 15px; overflow: hidden;">
-    <div id="progressBar" style="width: 0%; background-color: #2563eb; height: 100%; transition: width 0.3s ease;"></div>
-  </div>
-
-  <p id="questionNumber" style="font-weight: bold; color: #64748b; text-align: left;">Question 1 / 0</p>
-
-  <!-- Question Container -->
+  <p id="questionNumber"></p>
   <div id="questions-container">
-    <p>Loading questions...</p>
+    <p>Loading your MCQs...</p>
   </div>
-
-  <br>
-  <button onclick="location.href='index.html'" style="background-color: #6c757d; margin-top: 15px;">
-    🔙 Back to Home
-  </button>
-
 </div>
 
-<script>
-  const subject = localStorage.getItem('selectedSubject') || 'MDCAT';
-  document.getElementById('subjectTitle').textContent = subject.toUpperCase() + " Quiz";
-</script>
-
+<!-- Scripts -->
 <script src="quiz-data.js"></script>
-<script src="script.js"></script>
-
+<script src="script.js?v=2"></script> 
 </body>
-
 </html>
