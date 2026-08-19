@@ -2,71 +2,113 @@
 <html lang="en">
 
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Upload Files</title>
-
-<link rel="stylesheet" href="style.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Quiz</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>📄 Upload Quiz Files</h1>
+  <h1>📄 Upload Quiz MCQs</h1>
+  <p>Paste your JSON MCQs text below or select your files.</p>
 
-<p>Select your Questions file and Answers file.</p>
+  <!-- OPTION 1: JSON TEXT PASTE -->
+  <section style="margin-bottom: 25px; text-align: left;">
+    <h2>Option 1: Paste JSON Text</h2>
+    <textarea id="json-input" rows="8" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;" placeholder='[{"question": "Q1 Text", "options": ["A", "B", "C", "D"], "answer": 0}]'></textarea>
+    <button onclick="saveQuizData()" style="margin-top: 10px; width: 100%;">
+      🚀 Start Quiz from JSON
+    </button>
+  </section>
 
-<h2>Questions File</h2>
+  <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
 
-<input type="file" id="questionsFile" accept=".txt,.md">
+  <!-- OPTION 2: FILE UPLOAD -->
+  <section style="margin-bottom: 25px; text-align: left;">
+    <h2>Option 2: Upload Files (.txt / .md)</h2>
 
-<h2>Answers File</h2>
+    <label><strong>Questions File:</strong></label><br>
+    <input type="file" id="questionsFile" accept=".txt,.md,.json"><br><br>
 
-<input type="file" id="answersFile" accept=".txt,.md">
+    <label><strong>Answers File:</strong></label><br>
+    <input type="file" id="answersFile" accept=".txt,.md">
 
-<button onclick="uploadFiles()">
-🚀 Start Quiz
-</button>
+    <button onclick="uploadFiles()" style="margin-top: 15px; width: 100%;">
+      📂 Start Quiz from Files
+    </button>
+  </section>
 
-<br><br>
+  <br>
 
-<button onclick="location.href='index.html'">
-🏠 Back to Home
-</button>
+  <button onclick="location.href='index.html'" style="background-color: #6c757d;">
+    🏠 Back to Home
+  </button>
 
 </div>
 
 <script>
+// Function 1: Save JSON Text directly
+function saveQuizData() {
+  const jsonText = document.getElementById('json-input').value.trim();
+  
+  if (!jsonText) {
+    alert("Please paste your JSON MCQs text first!");
+    return;
+  }
 
-async function uploadFiles(){
+  try {
+    const parsedData = JSON.parse(jsonText);
+    if (!Array.isArray(parsedData) || parsedData.length === 0) {
+      alert("Invalid format! JSON must be an array of questions.");
+      return;
+    }
 
-const qFile=document.getElementById("questionsFile").files[0];
-const aFile=document.getElementById("answersFile").files[0];
-
-if(!qFile || !aFile){
-
-alert("Please select both files.");
-
-return;
-
+    // Save to LocalStorage
+    localStorage.setItem('customQuizData', JSON.stringify(parsedData));
+    alert("Quiz data saved successfully! Redirecting to Quiz page...");
+    window.location.href = 'quiz.html';
+  } catch (error) {
+    alert("JSON Syntax Error! Please check your brackets and commas.");
+  }
 }
 
-const questionsText=await qFile.text();
-const answersText=await aFile.text();
+// Function 2: Save Files (.txt / .md)
+async function uploadFiles() {
+  const qFile = document.getElementById("questionsFile").files[0];
+  const aFile = document.getElementById("answersFile").files[0];
 
-localStorage.setItem("questionsText",questionsText);
-localStorage.setItem("answersText",answersText);
+  if (!qFile) {
+    alert("Please select at least the Questions file.");
+    return;
+  }
 
-location.href="quiz.html";
+  // Handle JSON file upload directly
+  if (qFile.name.endsWith('.json')) {
+    const jsonContent = await qFile.text();
+    document.getElementById('json-input').value = jsonContent;
+    saveQuizData();
+    return;
+  }
 
+  if (!aFile) {
+    alert("Please select both Questions and Answers files for .txt/.md format.");
+    return;
+  }
+
+  const questionsText = await qFile.text();
+  const answersText = await aFile.text();
+
+  localStorage.setItem("questionsText", questionsText);
+  localStorage.setItem("answersText", answersText);
+
+  location.href = "quiz.html";
 }
-
 </script>
 
 </body>
 
-</html>
+             </html>
+      
