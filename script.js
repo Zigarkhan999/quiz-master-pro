@@ -6,7 +6,6 @@ let timeLeft = 1800;
 document.addEventListener('DOMContentLoaded', () => {
   const selectedSubject = localStorage.getItem('selectedSubject') || 'biology';
 
-  // 1. Specific subject ke uploaded MCQs load karna
   let quizData = [];
   const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
   const generalStoredData = localStorage.getItem('customQuizData');
@@ -25,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Fallback to defaultQuizData if no uploads exist
   if ((!quizData || quizData.length === 0) && typeof defaultQuizData !== 'undefined') {
     quizData = defaultQuizData;
   }
@@ -128,12 +126,10 @@ function finishQuiz() {
   clearInterval(timerInterval);
 
   const resultData = {
-    studentName: "Student",
-    studentId: "MDCAT-2026",
     quizData: window.currentQuizData,
     userAnswers: userAnswers
   };
 
   localStorage.setItem('lastExamResult', JSON.stringify(resultData));
   window.location.href = 'results.html';
-}
+  }
