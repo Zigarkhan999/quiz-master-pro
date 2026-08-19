@@ -1,68 +1,115 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz Results</title>
-
-<style>
-
-body{
-font-family:Arial,sans-serif;
-background:#f2f2f2;
-margin:0;
-padding:20px;
-}
-
-.container{
-max-width:500px;
-margin:auto;
-background:white;
-padding:25px;
-border-radius:15px;
-box-shadow:0 0 10px rgba(0,0,0,.2);
-text-align:center;
-}
-
-h1{
-color:#28a745;
-}
-
-button{
-width:100%;
-padding:14px;
-margin-top:15px;
-font-size:18px;
-border:none;
-border-radius:10px;
-background:#007BFF;
-color:white;
-cursor:pointer;
-}
-
-</style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Results</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .result-card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .stat-box {
+      display: flex;
+      justify-content: space-around;
+      margin: 15px 0;
+      font-weight: bold;
+    }
+    .review-item {
+      text-align: left;
+      border: 1px solid #e2e8f0;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      background: #f8fafc;
+    }
+    .correct-text { color: #16a34a; font-weight: bold; }
+    .wrong-text { color: #dc2626; font-weight: bold; }
+  </style>
 </head>
-
 <body>
 
 <div class="container">
+  <div class="result-card">
+    <h1>🎉 Quiz Finished!</h1>
+    <h2 id="scoreText">Score: 0 / 0</h2>
+    <h3 id="percentageText" style="color: #2563eb;">Percentage: 0%</h3>
 
-<h1>🎉 Quiz Finished</h1>
+    <div class="stat-box">
+      <span style="color: #16a34a;" id="correctCount">Correct: 0</span>
+      <span style="color: #dc2626;" id="wrongCount">Wrong: 0</span>
+      <span style="color: #6b7280;" id="unansweredCount">Unanswered: 0</span>
+    </div>
 
-<h2 id="finalScore">
-Your Score: 0 / 0
-</h2>
+    <button onclick="location.href='index.html'" style="background: #2563eb; width: 100%; margin-top: 10px;">🏠 Back to Home</button>
+  </div>
 
-<button onclick="window.location.href='quiz.html'">
-🔄 Play Again
-</button>
-
-<button onclick="window.location.href='index.html'">
-🏠 Home
-</button>
-
+  <h2>📊 Question Review</h2>
+  <div id="reviewContainer"></div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const resultRaw = localStorage.getItem('lastExamResult');
+  if (!resultRaw) {
+    document.getElementById('scoreText').textContent = "No result data found!";
+    return;
+  }
+
+  const resultData = JSON.parse(resultRaw);
+  const quizData = resultData.quizData || [];
+  const userAnswers = resultData.userAnswers || {};
+
+  let correct = 0;
+  let wrong = 0;
+  let unanswered = 0;
+
+  const reviewContainer = document.getElementById('reviewContainer');
+  reviewContainer.innerHTML = '';
+
+  quizData.forEach((q, index) => {
+    const userAns = userAnswers[index];
+    const isAnswered = userAns !== undefined;
+    const isCorrect = isAnswered && userAns === q.answer;
+
+    if (!isAnswered) {
+      unanswered++;
+    } else if (isCorrect) {
+      correct++;
+    } else {
+      wrong++;
+    }
+
+    const reviewDiv = document.createElement('div');
+    reviewDiv.className = 'review-item';
+
+    let userAnsText = isAnswered ? q.options[userAns] : "Not Answered";
+    let correctAnsText = q.options[q.answer];
+
+    reviewDiv.innerHTML = `
+      <p style="font-weight:bold; margin-bottom: 5px;">Q${index + 1}: ${q.question}</p>
+      <p style="margin: 3px 0;">Your Answer: <span class="${isCorrect ? 'correct-text' : 'wrong-text'}">${userAnsText}</span></p>
+      ${!isCorrect ? `<p style="margin: 3px 0;">Correct Answer: <span class="correct-text">${correctAnsText}</span></p>` : ''}
+    `;
+
+    reviewContainer.appendChild(reviewDiv);
+  });
+
+  const total = quizData.length;
+  const percentage = total > 0 ? ((correct / total) * 100).toFixed(1) : 0;
+
+  document.getElementById('scoreText').textContent = `Your Score: ${correct} / ${total}`;
+  document.getElementById('percentageText').textContent = `Percentage: ${percentage}%`;
+  document.getElementById('correctCount').textContent = `Correct: ${correct}`;
+  document.getElementById('wrongCount').textContent = `Wrong: ${wrong}`;
+  document.getElementById('unansweredCount').textContent = `Unanswered: ${unanswered}`;
+});
+</script>
 
 </body>
 </html>
