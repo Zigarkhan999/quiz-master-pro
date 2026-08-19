@@ -3,23 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiz Master Pro</title>
+  <title>Quiz Master Pro - MDCAT</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-  <h1>🎓 Quiz Master Pro</h1>
-  <p>Select an option below to start practicing or manage questions:</p>
+  <h1>🎓 MDCAT Test Portal</h1>
+  <p>Select a subject to start practicing or upload new MCQs:</p>
 
-  <button onclick="location.href='quiz.html'" style="margin-bottom: 12px; background: #2563eb;">
-    🚀 Start MDCAT Practice
+  <!-- Subject Buttons -->
+  <button onclick="startTest('biology')" style="margin-bottom: 10px; background: #059669; width:100%;">
+    🧬 Biology Test
   </button>
 
-  <button onclick="location.href='upload.html'" style="background: #16a34a;">
+  <button onclick="startTest('chemistry')" style="margin-bottom: 10px; background: #2563eb; width:100%;">
+    🧪 Chemistry Test
+  </button>
+
+  <button onclick="startTest('physics')" style="margin-bottom: 15px; background: #d97706; width:100%;">
+    ⚡ Physics Test
+  </button>
+
+  <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+
+  <button onclick="location.href='upload.html'" style="background: #4b5563; width:100%;">
     📤 Upload Custom MCQs
   </button>
 </div>
+
+<script>
+function startTest(subject) {
+  localStorage.setItem('selectedSubject', subject);
+  window.location.href = 'quiz.html';
+}
+</script>
 
 </body>
 </html>
