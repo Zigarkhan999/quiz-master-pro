@@ -1,33 +1,26 @@
 let currentQuestionIndex = 0;
 let userAnswers = {};
 let timerInterval;
-let timeLeft = 60;
+let timeLeft = 1800; // 30 mins for 200 MCQs
 
 document.addEventListener('DOMContentLoaded', () => {
-  const selectedSubject = localStorage.getItem('selectedSubject') || 'biology';
-
-  // 1. Pehle Check karein local storage mein uploaded data hai ya nahi
   let quizData = [];
+  
+  // 1. Check karein uploaded custom data local storage mein hai ya nahi
   const storedData = localStorage.getItem('customQuizData');
 
   if (storedData) {
     try {
       quizData = JSON.parse(storedData);
     } catch (e) {
-      console.error("Local storage data parse error:", e);
+      console.error("JSON parse error:", e);
     }
   }
 
-  // 2. Agar uploaded data na ho, toh default quiz-data.js uthayen
-  if ((!quizData || quizData.length === 0) && typeof defaultQuizData !== 'undefined') {
-    quizData = defaultQuizData;
-  }
-
-  // 3. Subject ke hisab se filter karein (agar subject match ho)
-  if (quizData.length > 0) {
-    const filtered = quizData.filter(q => q.subject && q.subject.toLowerCase() === selectedSubject.toLowerCase());
-    if (filtered.length > 0) {
-      quizData = filtered;
+  // 2. Agar local storage khali ho, tabhi default sample data load karein
+  if (!quizData || quizData.length === 0) {
+    if (typeof defaultQuizData !== 'undefined') {
+      quizData = defaultQuizData;
     }
   }
 
@@ -72,10 +65,10 @@ function renderQuiz() {
     <h3 style="margin-bottom:12px;">${q.question}</h3>
     ${optionsHTML}
     <div style="display:flex; justify-content:space-between; margin-top:20px;">
-      ${currentQuestionIndex > 0 ? `<button onclick="prevQuestion()" style="background:#6c757d; width:auto; padding:8px 16px;">Previous</button>` : '<div></div>'}
+      ${currentQuestionIndex > 0 ? `<button onclick="prevQuestion()" style="background:#6c757d; color:#fff; padding:8px 16px; border:none; border-radius:5px; cursor:pointer;">Previous</button>` : '<div></div>'}
       ${currentQuestionIndex < quizData.length - 1 
-        ? `<button onclick="nextQuestion()" style="width:auto; padding:8px 16px;">Next</button>` 
-        : `<button onclick="finishQuiz()" style="background:#16a34a; width:auto; padding:8px 16px;">Finish Quiz</button>`
+        ? `<button onclick="nextQuestion()" style="background:#2563eb; color:#fff; padding:8px 16px; border:none; border-radius:5px; cursor:pointer;">Next</button>` 
+        : `<button onclick="finishQuiz()" style="background:#16a34a; color:#fff; padding:8px 16px; border:none; border-radius:5px; cursor:pointer;">Finish Quiz</button>`
       }
     </div>
   `;
@@ -130,4 +123,4 @@ function finishQuiz() {
 
   localStorage.setItem('lastExamResult', JSON.stringify(resultData));
   window.location.href = 'results.html';
-}
+                          }
