@@ -1,142 +1,134 @@
-// LocalStorage se Quiz Data load karna (customQuizData ya purana quizFile)
-let quizData = [];
-try {
-  quizData = JSON.parse(localStorage.getItem('customQuizData')) || JSON.parse(localStorage.getItem('quizFile')) || [];
-} catch (e) {
-  quizData = [];
-}
-
 let currentQuestionIndex = 0;
-let userAnswers = {}; // Student ke saare selected answers store karne ke liye
+let userAnswers = {};
+let timerInterval;
 let timeLeft = 60;
-let timerInterval = null;
 
-// Page Load hone par Quiz initialize karna
 document.addEventListener('DOMContentLoaded', () => {
-  if (!quizData || quizData.length === 0) {
-    alert("No quiz data found! Please upload questions first.");
+  // 1. Storage se selected subject check karna
+  const selectedSubject = localStorage.getItem('selectedSubject') || 'biology';
+
+  // 2. Custom (Uploaded) data ya Default Data fetch karna
+  let allQuestions = JSON.parse(localStorage.getItem('customQuizData'));
+  
+  if (!allQuestions || allQuestions.length === 0) {
+    if (typeof defaultQuizData !== 'undefined') {
+      allQuestions = defaultQuizData;
+      localStorage.setItem('customQuizData', JSON.stringify(defaultQuizData));
+    } else {
+      allQuestions = [];
+    }
+  }
+
+  // 3. Subject wise MCQs filter karna
+  let quizData = allQuestions.filter(q => q.subject && q.subject.toLowerCase() === selectedSubject.toLowerCase());
+
+  // Agar filter mein koi question na mile toh saare questions load kar lena
+  if (quizData.length === 0) {
+    quizData = allQuestions;
+  }
+
+  if (quizData.length === 0) {
+    alert("No quiz found! Redirecting to upload page.");
     window.location.href = 'upload.html';
     return;
   }
 
-  renderCurrentQuestion();
+  // Active Quiz Data ko session mein save rakhna
+  window.currentQuizData = quizData;
+
+  renderQuiz();
+  startTimer();
 });
 
-// Timer Functionality
-function startTimer() {
-  clearInterval(timerInterval);
-  timeLeft = 60;
-
-  const timerElement = document.getElementById("timer");
-  if (timerElement) {
-    timerElement.innerHTML = timeLeft;
-  }
-
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    if (timerElement) {
-      timerElement.innerHTML = timeLeft;
-    }
-
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      // Time khatam hone par next question par jana ya submit karna
-      if (currentQuestionIndex < quizData.length - 1) {
-        nextQuestion();
-      } else {
-        submitExam();
-      }
-    }
-  }, 1000);
-}
-
-// Render Current Question (Pagination / Unlimited MCQs support)
-function renderCurrentQuestion() {
-  startTimer();
-
+function renderQuiz() {
   const container = document.getElementById('questions-container');
+  const quizData = window.currentQuizData;
+  container.innerHTML = '';
+
   const q = quizData[currentQuestionIndex];
 
-  // 1. Progress Bar Update
-  const progressBar = document.getElementById("progressBar");
-  if (progressBar) {
-    let percent = ((currentQuestionIndex + 1) / quizData.length) * 100;
-    progressBar.style.width = percent + "%";
-  }
+  document.getElementById('questionNumber').textContent = `Question ${currentQuestionIndex + 1} / ${quizData.length}`;
 
-  // 2. Question Counter Update
-  const qNumElem = document.getElementById("questionNumber");
-  if (qNumElem) {
-    qNumElem.innerHTML = `Question ${currentQuestionIndex + 1} / ${quizData.length}`;
-  }
+  // Progress Bar Update
+  const progressPercent = ((currentQuestionIndex + 1) / quizData.length) * 100;
+  const progressBar = document.getElementById('progressBar');
+  if (progressBar) progressBar.style.width = `${progressPercent}%`;
 
-  // 3. Options HTML Generate karna
+  const qDiv = document.createElement('div');
+  qDiv.className = 'question-card';
+
   let optionsHTML = '';
   q.options.forEach((opt, optIndex) => {
-    const isChecked = userAnswers[currentQuestionIndex] === optIndex ? 'checked' : '';
+    const isSelected = userAnswers[currentQuestionIndex] === optIndex;
     optionsHTML += `
-      <label class="option-label" style="display:block; margin:10px 0; padding:12px; border:1px solid #ccc; border-radius:8px; cursor:pointer; background:#fff;">
-        <input type="radio" name="currentQ" value="${optIndex}" ${isChecked} onchange="saveAnswer(${optIndex})">
+      <label style="display:block; margin:8px 0; padding:10px; border:1px solid #ccc; border-radius:6px; cursor:pointer; background:${isSelected ? '#dbeafe' : '#fff'};">
+        <input type="radio" name="q_${currentQuestionIndex}" value="${optIndex}" ${isSelected ? 'checked' : ''} onchange="selectOption(${optIndex})">
         ${opt}
       </label>
     `;
   });
 
-  // 4. Screen par Question Display karna
-  if (container) {
-    container.innerHTML = `
-      <div class="question-card" style="padding:20px; border:1px solid #e2e8f0; border-radius:10px; background:#fff;">
-        <p style="color:#64748b; font-weight:bold; margin-bottom: 5px;">Question ${currentQuestionIndex + 1} of ${quizData.length}</p>
-        <h3 style="margin-top:0; margin-bottom:15px;">${q.question}</h3>
-        <div>${optionsHTML}</div>
-      </div>
-      
-      <div class="nav-buttons" style="margin-top:20px; display:flex; justify-content:space-between; gap:10px;">
-        <button class="btn" onclick="prevQuestion()" ${currentQuestionIndex === 0 ? 'disabled' : ''} style="padding:10px 20px; cursor:pointer;">Previous</button>
-        ${currentQuestionIndex === quizData.length - 1 
-          ? '<button class="btn" onclick="submitExam()" style="padding:10px 20px; background:#16a34a; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Submit Test</button>' 
-          : '<button class="btn" onclick="nextQuestion()" style="padding:10px 20px; cursor:pointer;">Next</button>'}
-      </div>
-    `;
-  }
+  qDiv.innerHTML = `
+    <h3 style="margin-bottom:12px;">${q.question}</h3>
+    ${optionsHTML}
+    <div style="display:flex; justify-content:space-between; margin-top:20px;">
+      ${currentQuestionIndex > 0 ? `<button onclick="prevQuestion()" style="background:#6c757d; width:auto; padding:8px 16px;">Previous</button>` : '<div></div>'}
+      ${currentQuestionIndex < quizData.length - 1 
+        ? `<button onclick="nextQuestion()" style="width:auto; padding:8px 16px;">Next</button>` 
+        : `<button onclick="finishQuiz()" style="background:#16a34a; width:auto; padding:8px 16px;">Finish Quiz</button>`
+      }
+    </div>
+  `;
+
+  container.appendChild(qDiv);
 }
 
-// Student ke option choice save karna
-function saveAnswer(optIndex) {
+function selectOption(optIndex) {
   userAnswers[currentQuestionIndex] = optIndex;
+  renderQuiz();
 }
 
-// Agle sawaal par jana
 function nextQuestion() {
-  if (currentQuestionIndex < quizData.length - 1) {
+  if (currentQuestionIndex < window.currentQuizData.length - 1) {
     currentQuestionIndex++;
-    renderCurrentQuestion();
+    renderQuiz();
   }
 }
 
-// Pichhle sawaal par wapas aana
 function prevQuestion() {
   if (currentQuestionIndex > 0) {
     currentQuestionIndex--;
-    renderCurrentQuestion();
+    renderQuiz();
   }
 }
 
-// Test Submit karke Results Page par bhejna
-function submitExam() {
+function startTimer() {
+  const timerElement = document.getElementById('timer');
+  if (!timerElement) return;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    timerElement.textContent = timeLeft;
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      alert("Time is up!");
+      finishQuiz();
+    }
+  }, 1000);
+}
+
+function finishQuiz() {
   clearInterval(timerInterval);
 
-  const studentName = document.getElementById('student-name')?.value.trim() || "Student";
-  const studentId = document.getElementById('student-id')?.value.trim() || "N/A";
-
-  const examResult = {
-    studentName,
-    studentId,
-    quizData,
-    userAnswers
+  const resultData = {
+    studentName: "Student",
+    studentId: "MDCAT-2026",
+    quizData: window.currentQuizData,
+    userAnswers: userAnswers
   };
 
-  localStorage.setItem('lastExamResult', JSON.stringify(examResult));
+  localStorage.setItem('lastExamResult', JSON.stringify(resultData));
   window.location.href = 'results.html';
-      }
+    }
     
