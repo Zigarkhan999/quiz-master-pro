@@ -1,114 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Upload Quiz</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Quiz MCQs</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  textarea {
+    width: 100%;
+    height: 200px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-family: monospace;
+    box-sizing: border-border-box;
+  }
+</style>
 </head>
-
 <body>
 
 <div class="container">
+  <h1>📤 Upload MCQs</h1>
+  <p>Paste your JSON MCQs array below to add them to the quiz database:</p>
 
-  <h1>📄 Upload Quiz MCQs</h1>
-  <p>Paste your JSON MCQs text below or select your files.</p>
+  <textarea id="jsonInput" placeholder='[
+  {
+    "subject": "biology",
+    "question": "Sample Question?",
+    "options": ["Opt 1", "Opt 2", "Opt 3", "Opt 4"],
+    "answer": 0
+  }
+]'></textarea>
 
-  <!-- OPTION 1: JSON TEXT PASTE -->
-  <section style="margin-bottom: 25px; text-align: left;">
-    <h2>Option 1: Paste JSON Text</h2>
-    <textarea id="json-input" rows="8" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;" placeholder='[{"question": "Q1 Text", "options": ["A", "B", "C", "D"], "answer": 0}]'></textarea>
-    <button onclick="saveQuizData()" style="margin-top: 10px; width: 100%;">
-      🚀 Start Quiz from JSON
-    </button>
-  </section>
-
-  <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
-
-  <!-- OPTION 2: FILE UPLOAD -->
-  <section style="margin-bottom: 25px; text-align: left;">
-    <h2>Option 2: Upload Files (.txt / .md)</h2>
-
-    <label><strong>Questions File:</strong></label><br>
-    <input type="file" id="questionsFile" accept=".txt,.md,.json"><br><br>
-
-    <label><strong>Answers File:</strong></label><br>
-    <input type="file" id="answersFile" accept=".txt,.md">
-
-    <button onclick="uploadFiles()" style="margin-top: 15px; width: 100%;">
-      📂 Start Quiz from Files
-    </button>
-  </section>
-
-  <br>
-
-  <button onclick="location.href='index.html'" style="background-color: #6c757d;">
-    🏠 Back to Home
-  </button>
-
+  <button onclick="saveAndStartQuiz()" style="margin-top: 15px;">🚀 Save & Start Test</button>
+  <button onclick="location.href='index.html'" style="background: #6c757d; margin-top: 10px;">🏠 Back to Home</button>
 </div>
 
 <script>
-// Function 1: Save JSON Text directly
-function saveQuizData() {
-  const jsonText = document.getElementById('json-input').value.trim();
-  
-  if (!jsonText) {
-    alert("Please paste your JSON MCQs text first!");
+function saveAndStartQuiz() {
+  const inputText = document.getElementById('jsonInput').value.trim();
+  if (!inputText) {
+    alert("Kharay rehnay ke bajaye pehle JSON MCQs paste karein!");
     return;
   }
 
   try {
-    const parsedData = JSON.parse(jsonText);
-    if (!Array.isArray(parsedData) || parsedData.length === 0) {
-      alert("Invalid format! JSON must be an array of questions.");
+    const newQuestions = JSON.parse(inputText);
+    if (!Array.isArray(newQuestions)) {
+      alert("Format galat hai! Input ek JSON Array [...] hona chahiye.");
       return;
     }
 
-    // Save to LocalStorage
-    localStorage.setItem('customQuizData', JSON.stringify(parsedData));
-    alert("Quiz data saved successfully! Redirecting to Quiz page...");
+    // Pehle se mojood questions ke sath naye combine karna
+    let existingData = JSON.parse(localStorage.getItem('customQuizData')) || [];
+    let updatedData = [...existingData, ...newQuestions];
+
+    // LocalStorage mein save karna (site par permanent practice ke liye)
+    localStorage.setItem('customQuizData', JSON.stringify(updatedData));
+
+    // Pehle question ka subject auto-select karna (default: biology)
+    const targetSubject = newQuestions[0]?.subject || 'biology';
+    localStorage.setItem('selectedSubject', targetSubject);
+
+    alert("MCQs successfully save ho gaye hain!");
     window.location.href = 'quiz.html';
-  } catch (error) {
-    alert("JSON Syntax Error! Please check your brackets and commas.");
+
+  } catch (e) {
+    alert("Invalid JSON Format! Apne JSON code ki syntax check karein.");
   }
-}
-
-// Function 2: Save Files (.txt / .md)
-async function uploadFiles() {
-  const qFile = document.getElementById("questionsFile").files[0];
-  const aFile = document.getElementById("answersFile").files[0];
-
-  if (!qFile) {
-    alert("Please select at least the Questions file.");
-    return;
-  }
-
-  // Handle JSON file upload directly
-  if (qFile.name.endsWith('.json')) {
-    const jsonContent = await qFile.text();
-    document.getElementById('json-input').value = jsonContent;
-    saveQuizData();
-    return;
-  }
-
-  if (!aFile) {
-    alert("Please select both Questions and Answers files for .txt/.md format.");
-    return;
-  }
-
-  const questionsText = await qFile.text();
-  const answersText = await aFile.text();
-
-  localStorage.setItem("questionsText", questionsText);
-  localStorage.setItem("answersText", answersText);
-
-  location.href = "quiz.html";
 }
 </script>
 
 </body>
-
-             </html>
-      
+</html>
