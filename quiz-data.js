@@ -12,6 +12,3 @@ const defaultQuizData = [
     "answer": 1
   }
 ];
-
-// LocalStorage clear karke naya data set karna
-localStorage.setItem('customQuizData', JSON.stringify(defaultQuizData));
