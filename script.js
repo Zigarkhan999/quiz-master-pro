@@ -6,20 +6,33 @@ let timeLeft = 60;
 document.addEventListener('DOMContentLoaded', () => {
   const selectedSubject = localStorage.getItem('selectedSubject') || 'biology';
 
-  // Pehle quiz-data.js se default data uthana
+  // 1. Pehle Check karein local storage mein uploaded data hai ya nahi
   let quizData = [];
-  
-  if (typeof defaultQuizData !== 'undefined' && defaultQuizData.length > 0) {
-    quizData = defaultQuizData.filter(q => q.subject && q.subject.toLowerCase() === selectedSubject.toLowerCase());
-    
-    // Agar selected subject ka filter match na ho toh saare load kar dena
-    if (quizData.length === 0) {
-      quizData = defaultQuizData;
+  const storedData = localStorage.getItem('customQuizData');
+
+  if (storedData) {
+    try {
+      quizData = JSON.parse(storedData);
+    } catch (e) {
+      console.error("Local storage data parse error:", e);
     }
   }
 
-  if (quizData.length === 0) {
-    document.getElementById('questions-container').innerHTML = '<p style="color:red; font-weight:bold;">No questions available!</p>';
+  // 2. Agar uploaded data na ho, toh default quiz-data.js uthayen
+  if ((!quizData || quizData.length === 0) && typeof defaultQuizData !== 'undefined') {
+    quizData = defaultQuizData;
+  }
+
+  // 3. Subject ke hisab se filter karein (agar subject match ho)
+  if (quizData.length > 0) {
+    const filtered = quizData.filter(q => q.subject && q.subject.toLowerCase() === selectedSubject.toLowerCase());
+    if (filtered.length > 0) {
+      quizData = filtered;
+    }
+  }
+
+  if (!quizData || quizData.length === 0) {
+    document.getElementById('questions-container').innerHTML = '<p style="color:red; font-weight:bold; text-align:center;">No questions available!</p>';
     return;
   }
 
