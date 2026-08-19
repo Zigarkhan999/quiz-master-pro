@@ -1,35 +1,48 @@
 let currentQuestionIndex = 0;
 let userAnswers = {};
 let timerInterval;
-let timeLeft = 1800; // 30 mins for 200 MCQs
+let timeLeft = 1800;
 
 document.addEventListener('DOMContentLoaded', () => {
+  const selectedSubject = localStorage.getItem('selectedSubject') || 'biology';
+
+  // 1. Specific subject ke uploaded MCQs load karna
   let quizData = [];
-  
-  // 1. Check karein uploaded custom data local storage mein hai ya nahi
-  const storedData = localStorage.getItem('customQuizData');
+  const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
+  const generalStoredData = localStorage.getItem('customQuizData');
 
-  if (storedData) {
+  if (storedSubjectData) {
     try {
-      quizData = JSON.parse(storedData);
+      quizData = JSON.parse(storedSubjectData);
     } catch (e) {
-      console.error("JSON parse error:", e);
+      console.error("Subject data error:", e);
+    }
+  } else if (generalStoredData) {
+    try {
+      quizData = JSON.parse(generalStoredData);
+    } catch (e) {
+      console.error("General data error:", e);
     }
   }
 
-  // 2. Agar local storage khali ho, tabhi default sample data load karein
-  if (!quizData || quizData.length === 0) {
-    if (typeof defaultQuizData !== 'undefined') {
-      quizData = defaultQuizData;
-    }
+  // Fallback to defaultQuizData if no uploads exist
+  if ((!quizData || quizData.length === 0) && typeof defaultQuizData !== 'undefined') {
+    quizData = defaultQuizData;
   }
 
   if (!quizData || quizData.length === 0) {
-    document.getElementById('questions-container').innerHTML = '<p style="color:red; font-weight:bold; text-align:center;">No questions available!</p>';
+    document.getElementById('questions-container').innerHTML = 
+      `<p style="color:red; font-weight:bold; text-align:center;">No MCQs found for ${selectedSubject.toUpperCase()}! Please upload MCQs first.</p>`;
     return;
   }
 
   window.currentQuizData = quizData;
+  
+  const titleElem = document.getElementById('subjectTitle');
+  if (titleElem) {
+    titleElem.textContent = selectedSubject.toUpperCase() + " Quiz";
+  }
+
   renderQuiz();
   startTimer();
 });
@@ -123,4 +136,4 @@ function finishQuiz() {
 
   localStorage.setItem('lastExamResult', JSON.stringify(resultData));
   window.location.href = 'results.html';
-                          }
+}
