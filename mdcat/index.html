@@ -22,59 +22,72 @@
 Select a subject to start practicing.
 </p>
 
+<!-- Biology Card -->
 <div class="card">
 
 <h2>🧬 Biology</h2>
 
 <p>Practice Biology MCQs chapter by chapter.</p>
 
-<button onclick="location.href='../biology/index.html'">
+<button onclick="openQuiz('biology')">
 Open Biology
 </button>
 
 </div>
 
+<!-- Chemistry Card -->
 <div class="card">
 
 <h2>🧪 Chemistry</h2>
 
 <p>Practice Chemistry MCQs.</p>
 
-<button disabled>
-Coming Soon
+<button onclick="openQuiz('chemistry')">
+Open Chemistry
 </button>
 
 </div>
 
+<!-- Physics Card -->
 <div class="card">
 
 <h2>⚡ Physics</h2>
 
 <p>Practice Physics MCQs.</p>
 
-<button disabled>
-Coming Soon
-</button>
+<button onclick="openQuiz('physics')">
+Open Physics</button>
 
 </div>
 
+<!-- English Card -->
 <div class="card">
 
 <h2>📖 English</h2>
 
 <p>Practice English MCQs.</p>
 
-<button disabled>
-Coming Soon
+<button onclick="openQuiz('english')">
+Open English
 </button>
 
 </div>
+
+<br>
 
 <button onclick="location.href='../index.html'">
 🏠 Back to Home
 </button>
 
 </div>
+
+<script>
+function openQuiz(subjectName) {
+  // Selected subject ko save karke main quiz page par redirect karega
+  localStorage.setItem('selectedSubject', subjectName);
+  window.location.href = '../quiz.html';
+}
+</script>
 
 </body>
 
