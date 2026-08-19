@@ -1,144 +1,120 @@
-let questions = JSON.parse(localStorage.getItem("quizData")) || [];
-
-if (questions.length === 0) {
-    alert("No quiz found.");
-    window.location.href = "index.html";
-}
-
-let currentQuestion = 0;
-let score = 0;
+let currentQuestionIndex = 0;
+let userAnswers = {};
+let timerInterval;
 let timeLeft = 60;
-let timer;
 
-const question = document.getElementById("question");
-const options = document.getElementById("options");
-const message = document.getElementById("message");
-const timerText = document.getElementById("timer");
-const questionNumber = document.getElementById("questionNumber");
-const progressBar = document.getElementById("progressBar");
+document.addEventListener('DOMContentLoaded', () => {
+  const selectedSubject = localStorage.getItem('selectedSubject') || 'biology';
 
-function loadQuestion(){
-
-    clearInterval(timer);
-
-    timeLeft = 60;
-    timerText.textContent = timeLeft;
-
-    message.textContent = "";
-
-    let q = questions[currentQuestion];
-
-    question.textContent = q.question;
-
-    questionNumber.textContent =
-    "Question " + (currentQuestion+1) + " / " + questions.length;
-
-    progressBar.style.width =
-    ((currentQuestion+1)/questions.length*100)+"%";
-
-    options.innerHTML="";
-
-    q.options.forEach(function(option,index){
-
-        let btn=document.createElement("button");
-
-        btn.textContent=option;
-
-        btn.onclick=function(){
-
-            checkAnswer(index);
-
-        };
-
-        options.appendChild(btn);
-
-    });
-
-    startTimer();
-
-}
-
-function checkAnswer(selected){
-
-    clearInterval(timer);
-
-    let correct=questions[currentQuestion].answer;
-
-    let buttons=options.querySelectorAll("button");
-
-    buttons.forEach(btn=>btn.disabled=true);
-
-    if(selected===correct){
-
-        score++;
-
-        message.innerHTML="✅ Correct";
-
-        message.style.color="green";
-
-    }else{
-
-        message.innerHTML="❌ Wrong";
-
-        message.style.color="red";
-
-        buttons[correct].style.background="green";
-
-        buttons[selected].style.background="red";
-
-    }
-
-    setTimeout(nextQuestion,1500);
-
-}
-
-function nextQuestion(){
-
-    currentQuestion++;
-
-    if(currentQuestion>=questions.length){
-
-        document.querySelector(".container").innerHTML=`
-        <h1>🎉 Quiz Finished</h1>
-
-        <h2>Your Score</h2>
-
-        <h1>${score} / ${questions.length}</h1>
-
-        <button onclick="location.href='index.html'">
-
-        Back
-
-        </button>
-        `;
-
-        return;
-
-    }
-
-    loadQuestion();
-
-}
-
-function startTimer(){
-
-    timer=setInterval(function(){
-
-        timeLeft--;
-
-        timerText.textContent=timeLeft;
-
-        if(timeLeft<=0){
-
-            clearInterval(timer);
-
-            nextQuestion();
-
-        }
-
-    },1000);
-
-}
-
-loadQuestion();
+  // Pehle quiz-data.js se default data uthana
+  let quizData = [];
+  
+  if (typeof defaultQuizData !== 'undefined' && defaultQuizData.length > 0) {
+    quizData = defaultQuizData.filter(q => q.subject && q.subject.toLowerCase() === selectedSubject.toLowerCase());
     
+    // Agar selected subject ka filter match na ho toh saare load kar dena
+    if (quizData.length === 0) {
+      quizData = defaultQuizData;
+    }
+  }
+
+  if (quizData.length === 0) {
+    document.getElementById('questions-container').innerHTML = '<p style="color:red; font-weight:bold;">No questions available!</p>';
+    return;
+  }
+
+  window.currentQuizData = quizData;
+  renderQuiz();
+  startTimer();
+});
+
+function renderQuiz() {
+  const container = document.getElementById('questions-container');
+  const quizData = window.currentQuizData;
+  container.innerHTML = '';
+
+  const q = quizData[currentQuestionIndex];
+
+  document.getElementById('questionNumber').textContent = `Question ${currentQuestionIndex + 1} / ${quizData.length}`;
+
+  const progressPercent = ((currentQuestionIndex + 1) / quizData.length) * 100;
+  const progressBar = document.getElementById('progressBar');
+  if (progressBar) progressBar.style.width = `${progressPercent}%`;
+
+  const qDiv = document.createElement('div');
+  qDiv.className = 'question-card';
+
+  let optionsHTML = '';
+  q.options.forEach((opt, optIndex) => {
+    const isSelected = userAnswers[currentQuestionIndex] === optIndex;
+    optionsHTML += `
+      <label style="display:block; margin:8px 0; padding:10px; border:1px solid #ccc; border-radius:6px; cursor:pointer; background:${isSelected ? '#dbeafe' : '#fff'};">
+        <input type="radio" name="q_${currentQuestionIndex}" value="${optIndex}" ${isSelected ? 'checked' : ''} onchange="selectOption(${optIndex})">
+        ${opt}
+      </label>
+    `;
+  });
+
+  qDiv.innerHTML = `
+    <h3 style="margin-bottom:12px;">${q.question}</h3>
+    ${optionsHTML}
+    <div style="display:flex; justify-content:space-between; margin-top:20px;">
+      ${currentQuestionIndex > 0 ? `<button onclick="prevQuestion()" style="background:#6c757d; width:auto; padding:8px 16px;">Previous</button>` : '<div></div>'}
+      ${currentQuestionIndex < quizData.length - 1 
+        ? `<button onclick="nextQuestion()" style="width:auto; padding:8px 16px;">Next</button>` 
+        : `<button onclick="finishQuiz()" style="background:#16a34a; width:auto; padding:8px 16px;">Finish Quiz</button>`
+      }
+    </div>
+  `;
+
+  container.appendChild(qDiv);
+}
+
+function selectOption(optIndex) {
+  userAnswers[currentQuestionIndex] = optIndex;
+  renderQuiz();
+}
+
+function nextQuestion() {
+  if (currentQuestionIndex < window.currentQuizData.length - 1) {
+    currentQuestionIndex++;
+    renderQuiz();
+  }
+}
+
+function prevQuestion() {
+  if (currentQuestionIndex > 0) {
+    currentQuestionIndex--;
+    renderQuiz();
+  }
+}
+
+function startTimer() {
+  const timerElement = document.getElementById('timer');
+  if (!timerElement) return;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    timerElement.textContent = timeLeft;
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      alert("Time is up!");
+      finishQuiz();
+    }
+  }, 1000);
+}
+
+function finishQuiz() {
+  clearInterval(timerInterval);
+
+  const resultData = {
+    studentName: "Student",
+    studentId: "MDCAT-2026",
+    quizData: window.currentQuizData,
+    userAnswers: userAnswers
+  };
+
+  localStorage.setItem('lastExamResult', JSON.stringify(resultData));
+  window.location.href = 'results.html';
+}
