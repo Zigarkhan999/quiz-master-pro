@@ -5,40 +5,37 @@ let timeLeft = 1800;
 
 document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const sharedData = urlParams.get('data');
-  const urlSubject = urlParams.get('subject');
+  const testCode = urlParams.get('code');
 
-  let selectedSubject = urlSubject || localStorage.getItem('selectedSubject') || 'chemistry';
+  let selectedSubject = localStorage.getItem('selectedSubject') || 'chemistry';
   let quizData = [];
 
-  // 1. Agar Student Shared Link se aaya hai:
-  if (sharedData) {
-    try {
-      quizData = JSON.parse(decodeURIComponent(sharedData));
-      localStorage.setItem('quiz_' + selectedSubject, JSON.stringify(quizData));
-      localStorage.setItem('selectedSubject', selectedSubject);
-    } catch (e) {
-      console.error("Shared Data Parse Error:", e);
+  // 1. Check Test Code
+  if (testCode) {
+    const savedPackage = localStorage.getItem('TEST_' + testCode.toUpperCase());
+    if (savedPackage) {
+      try {
+        const parsedPkg = JSON.parse(savedPackage);
+        quizData = parsedPkg.questions;
+        selectedSubject = parsedPkg.subject;
+      } catch (e) {
+        console.error("Test Code Parse Error:", e);
+      }
     }
   }
 
-  // 2. Agar Shared Data nahi mila, toh Local Storage se uthaein
+  // 2. Fallback to general subject quiz
   if (!quizData || quizData.length === 0) {
     const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
     if (storedSubjectData) {
-      try {
-        quizData = JSON.parse(storedSubjectData);
-      } catch (e) {
-        console.error("Subject data error:", e);
-      }
+      try { quizData = JSON.parse(storedSubjectData); } catch (e) {}
     }
   }
 
   if (!quizData || quizData.length === 0) {
     document.getElementById('questions-container').innerHTML = 
       `<p style="color:red; font-weight:bold; text-align:center; padding:20px;">
-        No MCQs found for ${selectedSubject.toUpperCase()}!<br>
-        Aapke teacher ne abhi tak is test ka link share nahi kiya.
+        Invalid Test Code or No MCQs found!<br>Please check Test Code again.
        </p>`;
     return;
   }
@@ -47,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const titleElem = document.getElementById('subjectTitle');
   if (titleElem) {
-    titleElem.textContent = selectedSubject.toUpperCase() + " Quiz";
+    titleElem.textContent = selectedSubject.toUpperCase() + " Quiz" + (testCode ? ` (${testCode.toUpperCase()})` : '');
   }
 
   renderQuiz();
@@ -141,4 +138,5 @@ function finishQuiz() {
 
   localStorage.setItem('lastExamResult', JSON.stringify(resultData));
   window.location.href = 'results.html';
-                              }
+    }
+        
