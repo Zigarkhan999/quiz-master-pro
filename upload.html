@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Upload Quiz MCQs</title>
 <link rel="stylesheet" href="style.css">
+<!-- Compression Library for Short Links -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 <style>
   textarea {
     width: 100%;
-    height: 180px;
+    height: 200px;
     padding: 10px;
     border-radius: 8px;
     border: 1px solid #ccc;
@@ -38,19 +40,16 @@
     <option value="physics">⚡ Physics</option>
   </select>
 
-  <label style="font-weight:bold; display:block; margin-bottom:5px;">2. Set Test Code (e.g. CHEM1, MDCAT2026):</label>
-  <input type="text" id="testCodeInput" placeholder="Enter Test Code (e.g. CHEM101)" style="width:100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid #ccc; font-size:16px; box-sizing:border-box;">
-
-  <label style="font-weight:bold; display:block; margin-bottom:5px;">3. Paste JSON MCQs:</label>
+  <label style="font-weight:bold; display:block; margin-bottom:5px;">2. Paste JSON MCQs:</label>
   <textarea id="jsonInput" placeholder='Paste JSON array here...'></textarea>
 
-  <button onclick="publishTest()" style="margin-top: 15px; background: #16a34a; width:100%;">🚀 Publish Test & Get Clean Link</button>
+  <button onclick="publishTest()" style="margin-top: 15px; background: #16a34a; width:100%;">🚀 Generate Student Link</button>
 
   <div id="shareCard" class="share-card">
-    <h3 style="color: #15803d; margin-top:0;">✅ Official Test Link Ready!</h3>
-    <p>Students ke sath yeh short clean link share karein:</p>
+    <h3 style="color: #15803d; margin-top:0;">✅ Official Link Ready!</h3>
+    <p>Is link ko copy karke students ko bhejein (har mobile par chalega):</p>
     <input type="text" id="shareUrlInput" readonly style="width:100%; padding:8px; border-radius:4px; border:1px solid #ccc; margin-bottom:10px; font-weight:bold;">
-    <button onclick="copyShareLink()" style="background: #16a34a; width:100%;">📋 Copy Clean Link</button>
+    <button onclick="copyShareLink()" style="background: #16a34a; width:100%;">📋 Copy Student Link</button>
   </div>
 
   <button onclick="location.href='index.html'" style="background: #6c757d; margin-top: 10px; width:100%;">🏠 Back to Home</button>
@@ -95,12 +94,7 @@ function normalizeJSONAnswers(questions) {
 function publishTest() {
   const inputText = document.getElementById('jsonInput').value.trim();
   const selectedSubject = document.getElementById('subjectSelect').value;
-  let testCode = document.getElementById('testCodeInput').value.trim().toUpperCase();
 
-  if (!testCode) {
-    alert("Kritpya Test Code likhein (jaise CHEM1, TEST01)!");
-    return;
-  }
   if (!inputText) {
     alert("Pehle JSON MCQs paste karein!");
     return;
@@ -114,27 +108,16 @@ function publishTest() {
     }
 
     const formattedQuestions = normalizeJSONAnswers(rawQuestions);
+    const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(formattedQuestions));
 
-    // Save under Test Code
-    const testPackage = {
-      subject: selectedSubject,
-      code: testCode,
-      questions: formattedQuestions
-    };
-
-    localStorage.setItem('TEST_' + testCode, JSON.stringify(testPackage));
-    localStorage.setItem('quiz_' + selectedSubject, JSON.stringify(formattedQuestions));
-    localStorage.setItem('selectedSubject', selectedSubject);
-
-    // Generate Clean Link
     const baseUrl = window.location.href.replace('upload.html', 'quiz.html');
-    const cleanUrl = `${baseUrl}?code=${testCode}`;
+    const finalUrl = `${baseUrl}?subject=${selectedSubject}&qdata=${compressed}`;
 
-    document.getElementById('shareUrlInput').value = cleanUrl;
+    document.getElementById('shareUrlInput').value = finalUrl;
     document.getElementById('shareCard').style.display = 'block';
 
   } catch (e) {
-    alert("JSON Syntax Error! Double quotes (\") check karein.");
+    alert("JSON Syntax Error! Check quotes and commas.");
   }
 }
 
@@ -142,10 +125,9 @@ function copyShareLink() {
   const input = document.getElementById('shareUrlInput');
   input.select();
   navigator.clipboard.writeText(input.value);
-  alert("Clean Test Link Copy Ho Gaya!");
+  alert("Link Copy Ho Gaya! Ab WhatsApp Par Share Karein.");
 }
 </script>
 
 </body>
-  </html>
-  
+</html>
