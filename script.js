@@ -3,29 +3,27 @@ let userAnswers = {};
 let timerInterval;
 let timeLeft = 1800;
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const cloudId = urlParams.get('id');
+  const compressedData = urlParams.get('data');
   let selectedSubject = localStorage.getItem('selectedSubject') || 'chemistry';
   let quizData = [];
 
-  // Fetch Cloud MCQs automatically using the bin ID
-  if (cloudId) {
+  // 1. Instant Decompress Data from URL
+  if (compressedData) {
     try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${cloudId}/latest`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.record) {
-          quizData = data.record.questions || [];
-          selectedSubject = data.record.subject || selectedSubject;
-        }
+      const decompressedString = LZString.decompressFromEncodedURIComponent(compressedData);
+      if (decompressedString) {
+        const parsed = JSON.parse(decompressedString);
+        quizData = parsed.q || [];
+        selectedSubject = parsed.s || selectedSubject;
       }
     } catch (e) {
-      console.error("Cloud fetch error", e);
+      console.error("Decompress error", e);
     }
   }
 
-  // Fallback to local storage if no cloud ID
+  // 2. Fallback to local storage if no URL data
   if (!quizData || quizData.length === 0) {
     const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
     if (storedSubjectData) {
@@ -139,4 +137,5 @@ function finishQuiz() {
 
   localStorage.setItem('lastExamResult', JSON.stringify(resultData));
   window.location.href = 'results.html';
-}
+    }
+  
