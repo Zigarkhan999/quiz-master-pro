@@ -4,38 +4,47 @@ let timerInterval;
 let timeLeft = 1800;
 
 document.addEventListener('DOMContentLoaded', () => {
-  const selectedSubject = localStorage.getItem('selectedSubject') || 'biology';
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedData = urlParams.get('data');
+  const urlSubject = urlParams.get('subject');
 
+  let selectedSubject = urlSubject || localStorage.getItem('selectedSubject') || 'chemistry';
   let quizData = [];
-  const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
-  const generalStoredData = localStorage.getItem('customQuizData');
 
-  if (storedSubjectData) {
+  // 1. Agar Student Shared Link se aaya hai:
+  if (sharedData) {
     try {
-      quizData = JSON.parse(storedSubjectData);
+      quizData = JSON.parse(decodeURIComponent(sharedData));
+      localStorage.setItem('quiz_' + selectedSubject, JSON.stringify(quizData));
+      localStorage.setItem('selectedSubject', selectedSubject);
     } catch (e) {
-      console.error("Subject data error:", e);
-    }
-  } else if (generalStoredData) {
-    try {
-      quizData = JSON.parse(generalStoredData);
-    } catch (e) {
-      console.error("General data error:", e);
+      console.error("Shared Data Parse Error:", e);
     }
   }
 
-  if ((!quizData || quizData.length === 0) && typeof defaultQuizData !== 'undefined') {
-    quizData = defaultQuizData;
+  // 2. Agar Shared Data nahi mila, toh Local Storage se uthaein
+  if (!quizData || quizData.length === 0) {
+    const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
+    if (storedSubjectData) {
+      try {
+        quizData = JSON.parse(storedSubjectData);
+      } catch (e) {
+        console.error("Subject data error:", e);
+      }
+    }
   }
 
   if (!quizData || quizData.length === 0) {
     document.getElementById('questions-container').innerHTML = 
-      `<p style="color:red; font-weight:bold; text-align:center;">No MCQs found for ${selectedSubject.toUpperCase()}! Please upload MCQs first.</p>`;
+      `<p style="color:red; font-weight:bold; text-align:center; padding:20px;">
+        No MCQs found for ${selectedSubject.toUpperCase()}!<br>
+        Aapke teacher ne abhi tak is test ka link share nahi kiya.
+       </p>`;
     return;
   }
 
   window.currentQuizData = quizData;
-  
+
   const titleElem = document.getElementById('subjectTitle');
   if (titleElem) {
     titleElem.textContent = selectedSubject.toUpperCase() + " Quiz";
@@ -132,4 +141,4 @@ function finishQuiz() {
 
   localStorage.setItem('lastExamResult', JSON.stringify(resultData));
   window.location.href = 'results.html';
-  }
+                              }
