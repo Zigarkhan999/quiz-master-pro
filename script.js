@@ -5,26 +5,25 @@ let timeLeft = 1800;
 
 document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const testCode = urlParams.get('code');
+  const compressedData = urlParams.get('qdata');
+  const urlSubject = urlParams.get('subject');
 
-  let selectedSubject = localStorage.getItem('selectedSubject') || 'chemistry';
+  let selectedSubject = urlSubject || localStorage.getItem('selectedSubject') || 'chemistry';
   let quizData = [];
 
-  // 1. Check Test Code
-  if (testCode) {
-    const savedPackage = localStorage.getItem('TEST_' + testCode.toUpperCase());
-    if (savedPackage) {
-      try {
-        const parsedPkg = JSON.parse(savedPackage);
-        quizData = parsedPkg.questions;
-        selectedSubject = parsedPkg.subject;
-      } catch (e) {
-        console.error("Test Code Parse Error:", e);
+  // 1. Read directly from URL Link (Works on ALL Mobiles)
+  if (compressedData) {
+    try {
+      const decompressed = LZString.decompressFromEncodedURIComponent(compressedData);
+      if (decompressed) {
+        quizData = JSON.parse(decompressed);
       }
+    } catch (e) {
+      console.error("Decompress Error:", e);
     }
   }
 
-  // 2. Fallback to general subject quiz
+  // 2. Fallback to LocalStorage
   if (!quizData || quizData.length === 0) {
     const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
     if (storedSubjectData) {
@@ -35,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!quizData || quizData.length === 0) {
     document.getElementById('questions-container').innerHTML = 
       `<p style="color:red; font-weight:bold; text-align:center; padding:20px;">
-        Invalid Test Code or No MCQs found!<br>Please check Test Code again.
+        Invalid Link or No MCQs found!
        </p>`;
     return;
   }
@@ -44,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const titleElem = document.getElementById('subjectTitle');
   if (titleElem) {
-    titleElem.textContent = selectedSubject.toUpperCase() + " Quiz" + (testCode ? ` (${testCode.toUpperCase()})` : '');
+    titleElem.textContent = selectedSubject.toUpperCase() + " Quiz";
   }
 
   renderQuiz();
@@ -138,5 +137,4 @@ function finishQuiz() {
 
   localStorage.setItem('lastExamResult', JSON.stringify(resultData));
   window.location.href = 'results.html';
-    }
-        
+}
