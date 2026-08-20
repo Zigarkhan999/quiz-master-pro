@@ -44,15 +44,18 @@
     <option value="physics">⚡ Physics</option>
   </select>
 
-  <label style="font-weight:bold; display:block; margin-bottom:5px;">2. Paste JSON MCQs:</label>
+  <label style="font-weight:bold; display:block; margin-bottom:5px;">2. Set Test Name/Code (e.g. CHEM1, MDCAT1):</label>
+  <input type="text" id="testCodeInput" placeholder="Enter Test Code" style="width:100%; padding:10px; margin-bottom:15px; border-radius:6px; border:1px solid #ccc; font-size:16px; box-sizing:border-box;">
+
+  <label style="font-weight:bold; display:block; margin-bottom:5px;">3. Paste JSON MCQs:</label>
   <textarea id="jsonInput" placeholder='Paste JSON array here...'></textarea>
 
-  <button id="pubBtn" onclick="publishTest()" style="margin-top: 15px; background: #16a34a; width:100%;">🚀 Generate Official Short Link</button>
-  <div id="loader" class="loading-spinner">⏳ Uploading test data... Please wait...</div>
+  <button id="pubBtn" onclick="publishTest()" style="margin-top: 15px; background: #16a34a; width:100%;">🚀 Publish Test & Generate Link</button>
+  <div id="loader" class="loading-spinner">⏳ Saving test to GitHub... Please wait...</div>
 
   <div id="shareCard" class="share-card">
     <h3 style="color: #15803d; margin-top:0;">✅ Official Test Link Ready!</h3>
-    <p>Yeh short link copy kar ke WhatsApp par share karein:</p>
+    <p>Yeh short link WhatsApp par share karein:</p>
     <input type="text" id="shareUrlInput" readonly style="width:100%; padding:8px; border-radius:4px; border:1px solid #ccc; margin-bottom:10px; font-weight:bold;">
     <button onclick="copyShareLink()" style="background: #16a34a; width:100%;">📋 Copy Link</button>
   </div>
@@ -61,6 +64,11 @@
 </div>
 
 <script>
+// GH Configuration
+const GH_USERNAME = 'zigarkhan999';
+const GH_REPO = 'quiz-master-pro';
+const GH_TOKEN = 'YOUR_GITHUB_TOKEN_HERE'; // Step 1 wala token yahan paste karein
+
 function normalizeJSONAnswers(questions) {
   return questions.map(q => {
     let optsArray = [];
@@ -99,7 +107,12 @@ function normalizeJSONAnswers(questions) {
 async function publishTest() {
   const inputText = document.getElementById('jsonInput').value.trim();
   const selectedSubject = document.getElementById('subjectSelect').value;
+  let testCode = document.getElementById('testCodeInput').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
 
+  if (!testCode) {
+    alert("Test Code likhein (jaise chem1)!");
+    return;
+  }
   if (!inputText) {
     alert("Pehle JSON MCQs paste karein!");
     return;
@@ -114,7 +127,7 @@ async function publishTest() {
     }
     formattedQuestions = normalizeJSONAnswers(rawQuestions);
   } catch (e) {
-    alert("JSON Syntax Error! Format check karein.");
+    alert("JSON Syntax Error!");
     return;
   }
 
@@ -126,39 +139,51 @@ async function publishTest() {
   document.getElementById('pubBtn').disabled = true;
   document.getElementById('loader').style.display = 'block';
 
+  const fileName = `tests/${testCode}.json`;
+  const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+
   try {
-    // Ultra-fast free cloud storage service (No API Key Required)
-    const formData = new URLSearchParams();
-    formData.append('content', JSON.stringify(payload));
-    formData.append('format', 'json');
-    formData.append('expiry_days', '365');
-
-    const res = await fetch('https://dpaste.org/api/', {
-      method: 'POST',
-      body: formData
+    // Check if file exists to get SHA
+    let sha = '';
+    const checkRes = await fetch(`https://api.github.com/repos/${GH_USERNAME}/${GH_REPO}/contents/${fileName}`, {
+      headers: { 'Authorization': `token ${GH_TOKEN}` }
     });
+    if (checkRes.ok) {
+      const checkData = await checkRes.json();
+      sha = checkData.sha;
+    }
 
-    const pasteUrl = await res.text();
-    const cleanUrlText = pasteUrl.trim().replace(/"/g, '');
+    // Create or Update File in Github
+    const putRes = await fetch(`https://api.github.com/repos/${GH_USERNAME}/${GH_REPO}/contents/${fileName}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${GH_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: `Add test ${testCode}`,
+        content: contentEncoded,
+        sha: sha ? sha : undefined
+      })
+    });
 
     document.getElementById('pubBtn').disabled = false;
     document.getElementById('loader').style.display = 'none';
 
-    if (cleanUrlText.includes('dpaste.org')) {
-      const pasteId = cleanUrlText.split('/').filter(Boolean).pop();
+    if (putRes.ok) {
       const baseUrl = window.location.href.replace('upload.html', 'quiz.html');
-      const finalCleanUrl = `${baseUrl}?id=${pasteId}`;
+      const finalUrl = `${baseUrl}?file=${testCode}`;
 
-      document.getElementById('shareUrlInput').value = finalCleanUrl;
+      document.getElementById('shareUrlInput').value = finalUrl;
       document.getElementById('shareCard').style.display = 'block';
     } else {
-      alert("Error generating link. Try again.");
+      alert("GitHub Token Error! Token check karein.");
     }
 
   } catch (err) {
     document.getElementById('pubBtn').disabled = false;
     document.getElementById('loader').style.display = 'none';
-    alert("Network Error! Internet connection check karein.");
+    alert("Network Error!");
   }
 }
 
@@ -166,10 +191,10 @@ function copyShareLink() {
   const input = document.getElementById('shareUrlInput');
   input.select();
   navigator.clipboard.writeText(input.value);
-  alert("Short Clean Link Copy Ho Gaya!");
+  alert("Link Copy Ho Gaya!");
 }
 </script>
 
 </body>
-                                                                                                                          </html>
-  
+      </html>
+      
