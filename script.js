@@ -5,25 +5,26 @@ let timeLeft = 1800;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const cloudId = urlParams.get('id');
+  const testFile = urlParams.get('file');
   let selectedSubject = localStorage.getItem('selectedSubject') || 'chemistry';
   let quizData = [];
 
-  // Fetch data instantly from dpaste
-  if (cloudId) {
+  // 1. Fetch JSON file from Github repository
+  if (testFile) {
     try {
-      const res = await fetch(`https://dpaste.org/${cloudId}/raw`);
-      const data = await res.json();
-      if (data && data.questions) {
+      const rawUrl = `https://raw.githubusercontent.com/zigarkhan999/quiz-master-pro/main/tests/${testFile}.json?t=${Date.now()}`;
+      const res = await fetch(rawUrl);
+      if (res.ok) {
+        const data = await res.json();
         quizData = data.questions;
         selectedSubject = data.subject || selectedSubject;
       }
     } catch (e) {
-      console.error("Cloud fetch error", e);
+      console.error("Fetch error", e);
     }
   }
 
-  // Fallback to local storage if no cloud ID
+  // 2. Fallback to LocalStorage
   if (!quizData || quizData.length === 0) {
     const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
     if (storedSubjectData) {
@@ -34,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!quizData || quizData.length === 0) {
     document.getElementById('questions-container').innerHTML = 
       `<p style="color:red; font-weight:bold; text-align:center; padding:20px;">
-        Invalid Link or MCQs not found!
+        Test file not found! Please check the link again.
        </p>`;
     return;
   }
@@ -137,5 +138,4 @@ function finishQuiz() {
 
   localStorage.setItem('lastExamResult', JSON.stringify(resultData));
   window.location.href = 'results.html';
-          }
-    
+}
