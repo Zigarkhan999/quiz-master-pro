@@ -1,40 +1,50 @@
 let currentQuestionIndex = 0;
 let userAnswers = {};
 let timerInterval;
-let timeLeft = 60;
+let timeLeft = 1800;
 
-document.addEventListener('DOMContentLoaded', () => {
-  // 1. Storage se selected subject check karna
-  const selectedSubject = localStorage.getItem('selectedSubject') || 'biology';
+document.addEventListener('DOMContentLoaded', async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const cloudId = urlParams.get('id');
+  let selectedSubject = localStorage.getItem('selectedSubject') || 'chemistry';
+  let quizData = [];
 
-  // 2. Custom (Uploaded) data ya Default Data fetch karna
-  let allQuestions = JSON.parse(localStorage.getItem('customQuizData'));
-  
-  if (!allQuestions || allQuestions.length === 0) {
-    if (typeof defaultQuizData !== 'undefined') {
-      allQuestions = defaultQuizData;
-      localStorage.setItem('customQuizData', JSON.stringify(defaultQuizData));
-    } else {
-      allQuestions = [];
+  // Fetch data instantly from dpaste
+  if (cloudId) {
+    try {
+      const res = await fetch(`https://dpaste.org/${cloudId}/raw`);
+      const data = await res.json();
+      if (data && data.questions) {
+        quizData = data.questions;
+        selectedSubject = data.subject || selectedSubject;
+      }
+    } catch (e) {
+      console.error("Cloud fetch error", e);
     }
   }
 
-  // 3. Subject wise MCQs filter karna
-  let quizData = allQuestions.filter(q => q.subject && q.subject.toLowerCase() === selectedSubject.toLowerCase());
-
-  // Agar filter mein koi question na mile toh saare questions load kar lena
-  if (quizData.length === 0) {
-    quizData = allQuestions;
+  // Fallback to local storage if no cloud ID
+  if (!quizData || quizData.length === 0) {
+    const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
+    if (storedSubjectData) {
+      try { quizData = JSON.parse(storedSubjectData); } catch (e) {}
+    }
   }
 
-  if (quizData.length === 0) {
-    alert("No quiz found! Redirecting to upload page.");
-    window.location.href = 'upload.html';
+  if (!quizData || quizData.length === 0) {
+    document.getElementById('questions-container').innerHTML = 
+      `<p style="color:red; font-weight:bold; text-align:center; padding:20px;">
+        Invalid Link or MCQs not found!
+       </p>`;
     return;
   }
 
-  // Active Quiz Data ko session mein save rakhna
   window.currentQuizData = quizData;
+
+  const titleElem = document.getElementById('subjectTitle');
+  if (titleElem) {
+    titleElem.textContent = selectedSubject.toUpperCase() + " Quiz";
+  }
 
   renderQuiz();
   startTimer();
@@ -49,7 +59,6 @@ function renderQuiz() {
 
   document.getElementById('questionNumber').textContent = `Question ${currentQuestionIndex + 1} / ${quizData.length}`;
 
-  // Progress Bar Update
   const progressPercent = ((currentQuestionIndex + 1) / quizData.length) * 100;
   const progressBar = document.getElementById('progressBar');
   if (progressBar) progressBar.style.width = `${progressPercent}%`;
@@ -72,10 +81,10 @@ function renderQuiz() {
     <h3 style="margin-bottom:12px;">${q.question}</h3>
     ${optionsHTML}
     <div style="display:flex; justify-content:space-between; margin-top:20px;">
-      ${currentQuestionIndex > 0 ? `<button onclick="prevQuestion()" style="background:#6c757d; width:auto; padding:8px 16px;">Previous</button>` : '<div></div>'}
+      ${currentQuestionIndex > 0 ? `<button onclick="prevQuestion()" style="background:#6c757d; color:#fff; padding:8px 16px; border:none; border-radius:5px; cursor:pointer;">Previous</button>` : '<div></div>'}
       ${currentQuestionIndex < quizData.length - 1 
-        ? `<button onclick="nextQuestion()" style="width:auto; padding:8px 16px;">Next</button>` 
-        : `<button onclick="finishQuiz()" style="background:#16a34a; width:auto; padding:8px 16px;">Finish Quiz</button>`
+        ? `<button onclick="nextQuestion()" style="background:#2563eb; color:#fff; padding:8px 16px; border:none; border-radius:5px; cursor:pointer;">Next</button>` 
+        : `<button onclick="finishQuiz()" style="background:#16a34a; color:#fff; padding:8px 16px; border:none; border-radius:5px; cursor:pointer;">Finish Quiz</button>`
       }
     </div>
   `;
@@ -122,13 +131,11 @@ function finishQuiz() {
   clearInterval(timerInterval);
 
   const resultData = {
-    studentName: "Student",
-    studentId: "MDCAT-2026",
     quizData: window.currentQuizData,
     userAnswers: userAnswers
   };
 
   localStorage.setItem('lastExamResult', JSON.stringify(resultData));
   window.location.href = 'results.html';
-    }
+          }
     
