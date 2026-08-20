@@ -3,27 +3,31 @@ let userAnswers = {};
 let timerInterval;
 let timeLeft = 1800;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const compressedData = urlParams.get('qdata');
-  const urlSubject = urlParams.get('subject');
-
-  let selectedSubject = urlSubject || localStorage.getItem('selectedSubject') || 'chemistry';
+  const cloudId = urlParams.get('id');
+  let selectedSubject = localStorage.getItem('selectedSubject') || 'chemistry';
   let quizData = [];
 
-  // 1. Read directly from URL Link (Works on ALL Mobiles)
-  if (compressedData) {
+  // 1. Fetch from Cloud API if ID exists
+  if (cloudId) {
     try {
-      const decompressed = LZString.decompressFromEncodedURIComponent(compressedData);
-      if (decompressed) {
-        quizData = JSON.parse(decompressed);
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${cloudId}`, {
+        headers: {
+          'X-Master-Key': '$2a$10$42Yp3kP1mYvhR6Z3sU3DvuI6H6x0yJjWv7Z7c7k7l7m7n7o7p7q7r'
+        }
+      });
+      const data = await res.json();
+      if (data && data.record) {
+        quizData = data.record.questions;
+        selectedSubject = data.record.subject || selectedSubject;
       }
     } catch (e) {
-      console.error("Decompress Error:", e);
+      console.error("Cloud fetch error", e);
     }
   }
 
-  // 2. Fallback to LocalStorage
+  // 2. Fallback to local storage if no cloud ID
   if (!quizData || quizData.length === 0) {
     const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
     if (storedSubjectData) {
@@ -34,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!quizData || quizData.length === 0) {
     document.getElementById('questions-container').innerHTML = 
       `<p style="color:red; font-weight:bold; text-align:center; padding:20px;">
-        Invalid Link or No MCQs found!
+        Invalid Link or MCQs not found!
        </p>`;
     return;
   }
