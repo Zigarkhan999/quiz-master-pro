@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Upload Quiz MCQs</title>
 <link rel="stylesheet" href="style.css">
+<!-- LZ-String Compression Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 <style>
   textarea {
     width: 100%;
@@ -24,12 +26,6 @@
     margin-top: 15px;
     text-align: center;
   }
-  .loading-spinner {
-    display: none;
-    color: #2563eb;
-    font-weight: bold;
-    margin-top: 10px;
-  }
 </style>
 </head>
 <body>
@@ -48,7 +44,6 @@
   <textarea id="jsonInput" placeholder='Paste JSON array here...'></textarea>
 
   <button id="pubBtn" onclick="publishTest()" style="margin-top: 15px; background: #16a34a; width:100%; padding:12px; color:#fff; border:none; border-radius:6px; font-weight:bold; font-size:16px; cursor:pointer;">🚀 Generate Official Short Link</button>
-  <div id="loader" class="loading-spinner">⏳ Generating short link... Please wait...</div>
 
   <div id="shareCard" class="share-card">
     <h3 style="color: #15803d; margin-top:0;">✅ Official Test Link Ready!</h3>
@@ -96,7 +91,7 @@ function normalizeJSONAnswers(questions) {
   });
 }
 
-async function publishTest() {
+function publishTest() {
   const inputText = document.getElementById('jsonInput').value.trim();
   const selectedSubject = document.getElementById('subjectSelect').value;
 
@@ -119,54 +114,26 @@ async function publishTest() {
   }
 
   const payload = {
-    subject: selectedSubject,
-    questions: formattedQuestions
+    s: selectedSubject,
+    q: formattedQuestions
   };
 
-  document.getElementById('pubBtn').disabled = true;
-  document.getElementById('loader').style.display = 'block';
+  // Instant local compression using LZString (No Server Required)
+  const compressedData = LZString.compressToEncodedURIComponent(JSON.stringify(payload));
+  const baseUrl = window.location.href.replace('upload.html', 'quiz.html');
+  const finalUrl = `${baseUrl}?data=${compressedData}`;
 
-  try {
-    // Free Public Cloud Endpoint (No Token Required, Instant Response)
-    const res = await fetch('https://api.jsonbin.io/v3/b', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Bin-Private': 'false'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-    document.getElementById('pubBtn').disabled = false;
-    document.getElementById('loader').style.display = 'none';
-
-    if (data && data.metadata && data.metadata.id) {
-      const binId = data.metadata.id;
-      const baseUrl = window.location.href.replace('upload.html', 'quiz.html');
-      const finalUrl = `${baseUrl}?id=${binId}`;
-
-      document.getElementById('shareUrlInput').value = finalUrl;
-      document.getElementById('shareCard').style.display = 'block';
-    } else {
-      alert("Server response error, please try again!");
-    }
-
-  } catch (err) {
-    document.getElementById('pubBtn').disabled = false;
-    document.getElementById('loader').style.display = 'none';
-    alert("Network Error! Internet connection check karein.");
-  }
+  document.getElementById('shareUrlInput').value = finalUrl;
+  document.getElementById('shareCard').style.display = 'block';
 }
 
 function copyShareLink() {
   const input = document.getElementById('shareUrlInput');
   input.select();
   navigator.clipboard.writeText(input.value);
-  alert("Short Clean Link Copy Ho Gaya!");
+  alert("Clean Link Copy Ho Gaya!");
 }
 </script>
 
 </body>
-  </html>
-  
+</html>
