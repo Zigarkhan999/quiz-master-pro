@@ -3,39 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiz Master Pro - MDCAT</title>
+  <title>MDCAT Portal Pro</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-  <h1>🎓 MDCAT Test Portal</h1>
-  <p>Select a subject to start practicing or upload new MCQs:</p>
+  <h1>🎓 MDCAT Portal Pro</h1>
 
-  <!-- Subject Buttons -->
-  <button onclick="startTest('biology')" style="margin-bottom: 10px; background: #059669; width:100%;">
-    🧬 Biology Test
-  </button>
+  <!-- Enter Test Code Box -->
+  <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:8px; margin-bottom:20px;">
+    <h3 style="margin-top:0;">🔑 Enter Test Code</h3>
+    <input type="text" id="enterCodeInput" placeholder="Enter Test Code (e.g. CHEM101)" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; font-size:16px; margin-bottom:10px; box-sizing:border-box;">
+    <button onclick="startByCode()" style="background:#2563eb; width:100%;">▶️ Start Test</button>
+  </div>
 
-  <button onclick="startTest('chemistry')" style="margin-bottom: 10px; background: #2563eb; width:100%;">
-    🧪 Chemistry Test
-  </button>
-
-  <button onclick="startTest('physics')" style="margin-bottom: 15px; background: #d97706; width:100%;">
-    ⚡ Physics Test
-  </button>
+  <p style="font-weight:bold;">Or Select Practice Subject:</p>
+  <button onclick="startTest('biology')" style="margin-bottom: 10px; background: #059669; width:100%;">🧬 Biology Test</button>
+  <button onclick="startTest('chemistry')" style="margin-bottom: 10px; background: #2563eb; width:100%;">🧪 Chemistry Test</button>
+  <button onclick="startTest('physics')" style="margin-bottom: 15px; background: #d97706; width:100%;">⚡ Physics Test</button>
 
   <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
 
-  <button onclick="location.href='upload.html'" style="background: #4b5563; width:100%;">
-    📤 Upload Custom MCQs
-  </button>
+  <button onclick="location.href='upload.html'" style="background: #4b5563; width:100%;">📤 Teacher Portal (Create Test)</button>
 </div>
 
 <script>
 function startTest(subject) {
   localStorage.setItem('selectedSubject', subject);
   window.location.href = 'quiz.html';
+}
+
+function startByCode() {
+  const code = document.getElementById('enterCodeInput').value.trim().toUpperCase();
+  if (!code) {
+    alert("Pehle Test Code likhein!");
+    return;
+  }
+  window.location.href = `quiz.html?code=${code}`;
 }
 </script>
 
