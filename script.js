@@ -5,26 +5,27 @@ let timeLeft = 1800;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const testFile = urlParams.get('file');
+  const cloudId = urlParams.get('id');
   let selectedSubject = localStorage.getItem('selectedSubject') || 'chemistry';
   let quizData = [];
 
-  // 1. Fetch JSON file from Github repository
-  if (testFile) {
+  // Fetch Cloud MCQs automatically using the bin ID
+  if (cloudId) {
     try {
-      const rawUrl = `https://raw.githubusercontent.com/zigarkhan999/quiz-master-pro/main/tests/${testFile}.json?t=${Date.now()}`;
-      const res = await fetch(rawUrl);
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${cloudId}/latest`);
       if (res.ok) {
         const data = await res.json();
-        quizData = data.questions;
-        selectedSubject = data.subject || selectedSubject;
+        if (data && data.record) {
+          quizData = data.record.questions || [];
+          selectedSubject = data.record.subject || selectedSubject;
+        }
       }
     } catch (e) {
-      console.error("Fetch error", e);
+      console.error("Cloud fetch error", e);
     }
   }
 
-  // 2. Fallback to LocalStorage
+  // Fallback to local storage if no cloud ID
   if (!quizData || quizData.length === 0) {
     const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
     if (storedSubjectData) {
@@ -35,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!quizData || quizData.length === 0) {
     document.getElementById('questions-container').innerHTML = 
       `<p style="color:red; font-weight:bold; text-align:center; padding:20px;">
-        Test file not found! Please check the link again.
+        Invalid Link or MCQs not found!
        </p>`;
     return;
   }
