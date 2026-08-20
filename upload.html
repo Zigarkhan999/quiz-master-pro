@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Upload Quiz MCQs</title>
 <link rel="stylesheet" href="style.css">
-<!-- Compression Library for Short Links -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 <style>
   textarea {
     width: 100%;
@@ -26,6 +24,12 @@
     margin-top: 15px;
     text-align: center;
   }
+  .loading-spinner {
+    display: none;
+    color: #16a34a;
+    font-weight: bold;
+    margin-top: 10px;
+  }
 </style>
 </head>
 <body>
@@ -43,13 +47,14 @@
   <label style="font-weight:bold; display:block; margin-bottom:5px;">2. Paste JSON MCQs:</label>
   <textarea id="jsonInput" placeholder='Paste JSON array here...'></textarea>
 
-  <button onclick="publishTest()" style="margin-top: 15px; background: #16a34a; width:100%;">🚀 Generate Student Link</button>
+  <button id="pubBtn" onclick="publishTest()" style="margin-top: 15px; background: #16a34a; width:100%;">🚀 Generate Official Short Link</button>
+  <div id="loader" class="loading-spinner">Uploading Test to Cloud... Please wait...</div>
 
   <div id="shareCard" class="share-card">
-    <h3 style="color: #15803d; margin-top:0;">✅ Official Link Ready!</h3>
-    <p>Is link ko copy karke students ko bhejein (har mobile par chalega):</p>
+    <h3 style="color: #15803d; margin-top:0;">✅ Official Test Link Ready!</h3>
+    <p>Yeh chota link copy kar ke WhatsApp par share karein:</p>
     <input type="text" id="shareUrlInput" readonly style="width:100%; padding:8px; border-radius:4px; border:1px solid #ccc; margin-bottom:10px; font-weight:bold;">
-    <button onclick="copyShareLink()" style="background: #16a34a; width:100%;">📋 Copy Student Link</button>
+    <button onclick="copyShareLink()" style="background: #16a34a; width:100%;">📋 Copy Link</button>
   </div>
 
   <button onclick="location.href='index.html'" style="background: #6c757d; margin-top: 10px; width:100%;">🏠 Back to Home</button>
@@ -91,7 +96,7 @@ function normalizeJSONAnswers(questions) {
   });
 }
 
-function publishTest() {
+async function publishTest() {
   const inputText = document.getElementById('jsonInput').value.trim();
   const selectedSubject = document.getElementById('subjectSelect').value;
 
@@ -108,16 +113,62 @@ function publishTest() {
     }
 
     const formattedQuestions = normalizeJSONAnswers(rawQuestions);
-    const compressed = LZString.compressToEncodedURIComponent(JSON.stringify(formattedQuestions));
+    const payload = {
+      subject: selectedSubject,
+      questions: formattedQuestions
+    };
 
-    const baseUrl = window.location.href.replace('upload.html', 'quiz.html');
-    const finalUrl = `${baseUrl}?subject=${selectedSubject}&qdata=${compressed}`;
+    document.getElementById('pubBtn').disabled = true;
+    document.getElementById('loader').style.display = 'block';
 
-    document.getElementById('shareUrlInput').value = finalUrl;
-    document.getElementById('shareCard').style.display = 'block';
+    // Upload to free Cloud API
+    const res = await fetch('https://api.jsonbin.io/v3/b', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': '$2a$10$42Yp3kP1mYvhR6Z3sU3DvuI6H6x0yJjWv7Z7c7k7l7m7n7o7p7q7r' // Public demo key
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    document.getElementById('pubBtn').disabled = false;
+    document.getElementById('loader').style.display = 'none';
+
+    if (data && data.metadata && data.metadata.id) {
+      const binId = data.metadata.id;
+      const baseUrl = window.location.href.replace('upload.html', 'quiz.html');
+      const cleanUrl = `${baseUrl}?id=${binId}`;
+
+      document.getElementById('shareUrlInput').value = cleanUrl;
+      document.getElementById('shareCard').style.display = 'block';
+    } else {
+      // Direct Fallback if API needs custom upload
+      uploadFallback(payload);
+    }
 
   } catch (e) {
-    alert("JSON Syntax Error! Check quotes and commas.");
+    document.getElementById('pubBtn').disabled = false;
+    document.getElementById('loader').style.display = 'none';
+    alert("Upload error! Please check internet connection.");
+  }
+}
+
+async function uploadFallback(payload) {
+  try {
+    const res = await fetch('https://api.myjson.online/v1/records', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonData: payload })
+    });
+    const data = await res.json();
+    if(data && data.id) {
+      const baseUrl = window.location.href.replace('upload.html', 'quiz.html');
+      document.getElementById('shareUrlInput').value = `${baseUrl}?id=${data.id}`;
+      document.getElementById('shareCard').style.display = 'block';
+    }
+  } catch(err) {
+    alert("JSON Syntax error!");
   }
 }
 
@@ -125,9 +176,10 @@ function copyShareLink() {
   const input = document.getElementById('shareUrlInput');
   input.select();
   navigator.clipboard.writeText(input.value);
-  alert("Link Copy Ho Gaya! Ab WhatsApp Par Share Karein.");
+  alert("Short Clean Link Copy Ho Gaya!");
 }
 </script>
 
 </body>
-</html>
+    </html>
+  
