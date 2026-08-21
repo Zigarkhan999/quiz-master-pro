@@ -3,27 +3,29 @@ let userAnswers = {};
 let timerInterval;
 let timeLeft = 1800;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const compressedData = urlParams.get('data');
+  const quizId = urlParams.get('id');
   let selectedSubject = localStorage.getItem('selectedSubject') || 'chemistry';
   let quizData = [];
 
-  // 1. Instant Decompress Data from URL
-  if (compressedData) {
+  if (quizId) {
+    const container = document.getElementById('questions-container');
+    if(container) container.innerHTML = '<p style="text-align:center; font-weight:bold;">⏳ Loading 200+ MCQs, please wait...</p>';
+
     try {
-      const decompressedString = LZString.decompressFromEncodedURIComponent(compressedData);
-      if (decompressedString) {
-        const parsed = JSON.parse(decompressedString);
+      const res = await fetch(`https://dpaste.com/${quizId}.txt`);
+      if (res.ok) {
+        const textData = await res.text();
+        const parsed = JSON.parse(textData);
         quizData = parsed.q || [];
         selectedSubject = parsed.s || selectedSubject;
       }
     } catch (e) {
-      console.error("Decompress error", e);
+      console.error("Quiz Fetch Error:", e);
     }
   }
 
-  // 2. Fallback to local storage if no URL data
   if (!quizData || quizData.length === 0) {
     const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
     if (storedSubjectData) {
@@ -34,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!quizData || quizData.length === 0) {
     document.getElementById('questions-container').innerHTML = 
       `<p style="color:red; font-weight:bold; text-align:center; padding:20px;">
-        Invalid Link or MCQs not found!
+        ❌ MCQs load nahi ho sakay! Clear cache or check link.
        </p>`;
     return;
   }
@@ -43,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const titleElem = document.getElementById('subjectTitle');
   if (titleElem) {
-    titleElem.textContent = selectedSubject.toUpperCase() + " Quiz";
+    titleElem.textContent = selectedSubject.toUpperCase() + " Quiz (" + quizData.length + " MCQs)";
   }
 
   renderQuiz();
@@ -137,5 +139,4 @@ function finishQuiz() {
 
   localStorage.setItem('lastExamResult', JSON.stringify(resultData));
   window.location.href = 'results.html';
-    }
-  
+}
