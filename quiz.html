@@ -10,17 +10,20 @@
 
 <div class="container">
   <h2 id="subjectTitle">Quiz</h2>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+    <p id="questionNumber" style="margin:0;"></p>
+    <p style="margin:0; font-weight:bold;">⏱ <span id="timer">30:00</span></p>
+  </div>
   <div id="progressBarContainer" style="width: 100%; background: #e2e8f0; height: 10px; border-radius: 5px;">
     <div id="progressBar" style="width: 0%; background: #2563eb; height: 100%;"></div>
   </div>
-  <p id="questionNumber"></p>
   <div id="questions-container">
-    <p>Loading your MCQs from server...</p>
+    <p>Loading your MCQs...</p>
   </div>
 </div>
 
 <!-- Scripts -->
 <script src="quiz-data.js"></script>
-<script src="script.js?v=3"></script> 
+<script src="script.js?v=5"></script>
 </body>
 </html>
