@@ -1,48 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MDCAT Portal Pro</title>
-  <link rel="stylesheet" href="style.css">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Quiz Master Pro</title>
+
+<link rel="stylesheet" href="style.css">
+
 </head>
+
 <body>
 
 <div class="container">
-  <h1>🎓 MDCAT Portal Pro</h1>
 
-  <!-- Enter Test Code Box -->
-  <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:15px; border-radius:8px; margin-bottom:20px;">
-    <h3 style="margin-top:0;">🔑 Enter Test Code</h3>
-    <input type="text" id="enterCodeInput" placeholder="Enter Test Code (e.g. CHEM101)" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; font-size:16px; margin-bottom:10px; box-sizing:border-box;">
-    <button onclick="startByCode()" style="background:#2563eb; width:100%;">▶️ Start Test</button>
-  </div>
+<h1>📚 Quiz Master Pro</h1>
 
-  <p style="font-weight:bold;">Or Select Practice Subject:</p>
-  <button onclick="startTest('biology')" style="margin-bottom: 10px; background: #059669; width:100%;">🧬 Biology Test</button>
-  <button onclick="startTest('chemistry')" style="margin-bottom: 10px; background: #2563eb; width:100%;">🧪 Chemistry Test</button>
-  <button onclick="startTest('physics')" style="margin-bottom: 15px; background: #d97706; width:100%;">⚡ Physics Test</button>
+<p style="text-align:center;">
+Ek subject chunein aur foran MCQs practice karna shuru karein.
+</p>
 
-  <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ccc;">
+<label style="font-weight:bold; display:block; margin-top:15px; margin-bottom:5px;">Subject Chunein:</label>
+<select id="subjectSelect" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ccc; font-size:16px;">
+  <option value="chemistry">🧪 Chemistry</option>
+  <option value="biology">🧬 Biology</option>
+  <option value="physics">⚡ Physics</option>
+</select>
 
-  <button onclick="location.href='upload.html'" style="background: #4b5563; width:100%;">📤 Teacher Portal (Create Test)</button>
+<button onclick="startLocalQuiz()">
+🚀 Start Quiz
+</button>
+
+<button onclick="location.href='upload.html'" style="background:#16a34a;">
+📤 Apna Test Banayein / Share Karein
+</button>
+
 </div>
 
+<script src="quiz-data.js"></script>
 <script>
-function startTest(subject) {
+function startLocalQuiz() {
+  const subject = document.getElementById('subjectSelect').value;
   localStorage.setItem('selectedSubject', subject);
   window.location.href = 'quiz.html';
-}
-
-function startByCode() {
-  const code = document.getElementById('enterCodeInput').value.trim().toUpperCase();
-  if (!code) {
-    alert("Pehle Test Code likhein!");
-    return;
-  }
-  window.location.href = `quiz.html?code=${code}`;
 }
 </script>
 
 </body>
+
 </html>
