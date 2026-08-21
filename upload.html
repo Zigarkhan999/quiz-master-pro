@@ -32,6 +32,32 @@
     font-weight: bold;
     margin: 10px 0;
   }
+  .file-upload-box {
+    border: 2px dashed #16a34a;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    margin-bottom: 12px;
+    background: #f0fdf4;
+  }
+  .counter {
+    font-size: 13px;
+    color: #555;
+    margin-top: 6px;
+    text-align: right;
+  }
+  .error-box {
+    display: none;
+    background: #fef2f2;
+    border: 1px solid #dc2626;
+    color: #991b1b;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
 </style>
 </head>
 <body>
@@ -46,8 +72,20 @@
     <option value="physics">⚡ Physics</option>
   </select>
 
-  <label style="font-weight:bold; display:block; margin-bottom:5px;">2. Paste JSON MCQs (Supports 200+ MCQs):</label>
-  <textarea id="jsonInput" placeholder='Paste JSON array here...'></textarea>
+  <label style="font-weight:bold; display:block; margin-bottom:5px;">2. JSON MCQs Add Karein (Supports 200+ MCQs):</label>
+
+  <div class="file-upload-box">
+    <p style="margin-bottom:10px; font-weight:bold;">📁 File Se Upload Karein (Recommended — Paste se zyada reliable, kuch bhi cut nahi hota)</p>
+    <input type="file" id="fileInput" accept=".txt,.json" style="width:100%;">
+    <p style="font-size:12px; color:#666; margin-top:6px;">ChatGPT ka jawab pehle Notes app / any text editor mein paste kar ke .txt file save karein, phir yahan select karein.</p>
+  </div>
+
+  <p style="text-align:center; font-weight:bold; color:#888; margin:10px 0;">— YA —</p>
+
+  <textarea id="jsonInput" placeholder='Yahan seedha JSON array paste karein... (agar 200+ MCQs hain to File Upload use karna behtar hai)'></textarea>
+  <div class="counter" id="charCounter">0 characters</div>
+
+  <div id="errorBox" class="error-box"></div>
 
   <button id="pubBtn" onclick="handlePublish()" style="margin-top: 15px; background: #16a34a; width:100%; padding:12px; color:#fff; border:none; border-radius:6px; font-weight:bold; font-size:16px; cursor:pointer;">🚀 Generate Test Link</button>
   
@@ -64,6 +102,42 @@
 </div>
 
 <script>
+const jsonInputEl = document.getElementById('jsonInput');
+const charCounterEl = document.getElementById('charCounter');
+const errorBoxEl = document.getElementById('errorBox');
+
+function updateCounter() {
+  const text = jsonInputEl.value;
+  let mcqCount = '?';
+  try {
+    const parsed = JSON.parse(text);
+    if (Array.isArray(parsed)) mcqCount = parsed.length;
+  } catch (e) {
+    // ignore, counter just shows char count while typing
+  }
+  charCounterEl.textContent = `${text.length} characters | Detected MCQs: ${mcqCount}`;
+}
+
+jsonInputEl.addEventListener('input', updateCounter);
+
+// File upload handling — reads the FULL file content, no clipboard limits
+document.getElementById('fileInput').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (evt) {
+    jsonInputEl.value = evt.target.result;
+    updateCounter();
+    errorBoxEl.style.display = 'none';
+    alert('✅ File load ho gayi! Neeche "Generate Test Link" dabayein.');
+  };
+  reader.onerror = function () {
+    alert('❌ File read nahi ho saki, dobara koshish karein.');
+  };
+  reader.readAsText(file);
+});
+
 // Fast, High-Performance Normalizer for 200+ MCQs
 function normalizeJSONAnswersFast(questions) {
   const len = questions.length;
@@ -116,11 +190,28 @@ function normalizeJSONAnswersFast(questions) {
   return result;
 }
 
+function showJsonError(err, rawText) {
+  let detail = err.message || String(err);
+  // Try to extract position info Chrome/V8 gives: "...at position 1234"
+  const posMatch = detail.match(/position (\d+)/);
+  let contextMsg = '';
+  if (posMatch) {
+    const pos = parseInt(posMatch[1], 10);
+    const start = Math.max(0, pos - 40);
+    const end = Math.min(rawText.length, pos + 40);
+    const snippet = rawText.substring(start, end);
+    contextMsg = `\n\nMasla is jagah ke aas paas hai (character ${pos}):\n"...${snippet}..."`;
+  }
+  errorBoxEl.textContent = `❌ Invalid JSON: ${detail}${contextMsg}\n\nTip: Agar aapne paste kiya tha, to file upload try karein — paste karte waqt text kabhi kabhi mobile browser mein beech se cut ho jata hai.`;
+  errorBoxEl.style.display = 'block';
+}
+
 function handlePublish() {
   const btn = document.getElementById('pubBtn');
   const loader = document.getElementById('loader');
   const shareCard = document.getElementById('shareCard');
 
+  errorBoxEl.style.display = 'none';
   btn.disabled = true;
   loader.style.display = 'block';
   shareCard.style.display = 'none';
@@ -142,14 +233,15 @@ function handlePublish() {
       try {
         rawQuestions = JSON.parse(inputText);
       } catch (e) {
-        alert("Invalid JSON Format! Check syntax errors.");
+        showJsonError(e, inputText);
         btn.disabled = false;
         loader.style.display = 'none';
         return;
       }
 
       if (!Array.isArray(rawQuestions)) {
-        alert("Format error! JSON must be an array [...]");
+        errorBoxEl.textContent = "❌ Format error! JSON ek array [...] honi chahiye, object { } nahi.";
+        errorBoxEl.style.display = 'block';
         btn.disabled = false;
         loader.style.display = 'none';
         return;
@@ -197,7 +289,7 @@ function handlePublish() {
       }
 
       if (!shareLinkReady) {
-        alert("✅ Test is saved on this device and ready to play! (Share link ke liye internet ya dpaste.com service abhi available nahi — is device par 'Start Quiz' se khel saktay hain.)");
+        alert(`✅ ${formattedQuestions.length} MCQs is device par save ho gaye aur khelnay ke liye tayyar hain! (Share link ke liye internet ya dpaste.com service abhi available nahi.)`);
         window.location.href = 'quiz.html';
       }
 
@@ -220,4 +312,4 @@ function copyShareLink() {
 </script>
 
 </body>
-</html>
+  </html>
