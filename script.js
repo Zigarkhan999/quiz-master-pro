@@ -5,29 +5,27 @@ let timeLeft = 1800;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
-  const cloudId = urlParams.get('id');
+  const quizId = urlParams.get('id');
   let selectedSubject = localStorage.getItem('selectedSubject') || 'chemistry';
   let quizData = [];
 
-  // 1. Fetch from Cloud API if ID exists
-  if (cloudId) {
+  if (quizId) {
+    const container = document.getElementById('questions-container');
+    if(container) container.innerHTML = '<p style="text-align:center; font-weight:bold;">⏳ Loading 200+ MCQs, please wait...</p>';
+
     try {
-      const res = await fetch(`https://api.jsonbin.io/v3/b/${cloudId}`, {
-        headers: {
-          'X-Master-Key': '$2a$10$42Yp3kP1mYvhR6Z3sU3DvuI6H6x0yJjWv7Z7c7k7l7m7n7o7p7q7r'
-        }
-      });
-      const data = await res.json();
-      if (data && data.record) {
-        quizData = data.record.questions;
-        selectedSubject = data.record.subject || selectedSubject;
+      const res = await fetch(`https://dpaste.com/${quizId}.txt`);
+      if (res.ok) {
+        const textData = await res.text();
+        const parsed = JSON.parse(textData);
+        quizData = parsed.q || [];
+        selectedSubject = parsed.s || selectedSubject;
       }
     } catch (e) {
-      console.error("Cloud fetch error", e);
+      console.error("Quiz Fetch Error:", e);
     }
   }
 
-  // 2. Fallback to local storage if no cloud ID
   if (!quizData || quizData.length === 0) {
     const storedSubjectData = localStorage.getItem('quiz_' + selectedSubject);
     if (storedSubjectData) {
@@ -38,8 +36,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!quizData || quizData.length === 0) {
     document.getElementById('questions-container').innerHTML = 
       `<p style="color:red; font-weight:bold; text-align:center; padding:20px;">
-        Invalid Link or MCQs not found!
-       </p>`;
+        ❌ MCQs load nahi ho sakay! Home page se dobara subject select karein,
+        ya check karein ke share link sahi hai aur internet connection theek hai.
+       </p>
+       <button onclick="location.href='index.html'" style="background:#6c757d;">🏠 Home Page Par Jayein</button>`;
     return;
   }
 
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const titleElem = document.getElementById('subjectTitle');
   if (titleElem) {
-    titleElem.textContent = selectedSubject.toUpperCase() + " Quiz";
+    titleElem.textContent = selectedSubject.toUpperCase() + " Quiz (" + quizData.length + " MCQs)";
   }
 
   renderQuiz();
@@ -115,13 +115,21 @@ function prevQuestion() {
   }
 }
 
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
 function startTimer() {
   const timerElement = document.getElementById('timer');
   if (!timerElement) return;
 
+  timerElement.textContent = formatTime(timeLeft);
+
   timerInterval = setInterval(() => {
     timeLeft--;
-    timerElement.textContent = timeLeft;
+    timerElement.textContent = formatTime(timeLeft);
 
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
@@ -141,4 +149,4 @@ function finishQuiz() {
 
   localStorage.setItem('lastExamResult', JSON.stringify(resultData));
   window.location.href = 'results.html';
-}
+        }
