@@ -1,7 +1,7 @@
 let currentQuestionIndex = 0;
 let userAnswers = {};
 let timerInterval;
-let timeLeft = 1800;
+let timeLeft = 7200; // 2 hours (7200 seconds)
 
 document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
